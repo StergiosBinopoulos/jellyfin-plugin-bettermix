@@ -1,0 +1,4 @@
+librosa==0.11.0
+tensorflow==2.13.1
+tqdm==4.67.1
+pyinstaller

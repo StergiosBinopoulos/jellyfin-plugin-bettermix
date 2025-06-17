@@ -1,0 +1,5 @@
+bin
+obj
+.venv
+.python-version
+Backend/Deej-AI/Deej-AI-model

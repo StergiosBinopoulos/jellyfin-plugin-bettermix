@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <RootNamespace>Jellyfin.Plugin.BetterMix</RootNamespace>
+    <AssemblyName>Jellyfin.Plugin.BetterMix</AssemblyName>
+    <Authors>Stergios Binopoulos</Authors>
+    <Description>BetterMix, a Jellyfin plugin for better Instant Mix.</Description>
+    <PackageId>Jellyfin.Plugin.BetterMix</PackageId>
+    <PackageVersion>0.1.0</PackageVersion>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Jellyfin.Common" Version="10.10.7" />
+    <PackageReference Include="Jellyfin.Controller" Version="10.10.7" />
+    <PackageReference Include="Jellyfin.Model" Version="10.10.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Configuration\config.html" />
+    <EmbeddedResource Include="Configuration\config.html" />
+  </ItemGroup>
+
+  <Target Name="Deej-AI-folder" AfterTargets="Build">
+    <MakeDir Directories="$(OutputPath)Deej-AI" />
+  </Target>
+
+  <Target Name="Deej-AI-generator"
+          Inputs="Backend/Deej-AI/Deej-AI-generator.py"
+          Outputs="$(OutputPath)Deej-AI/Deej-AI-generator.py"
+          AfterTargets="Build">
+    <Exec Command="pyinstaller --onefile Backend/Deej-AI/Deej-AI-generator.py --distpath $(OutputPath)Deej-AI --workpath obj --specpath obj" />
+  </Target>
+
+  <Target Name="Deej-AI-scanner"
+          Inputs="Backend/Deej-AI/Deej-AI-scanner.py"
+          Outputs="$(OutputPath)Deej-AI/Deej-AI-scanner.py"
+          AfterTargets="Build">
+    <Exec Command="pyinstaller --onefile Backend/Deej-AI/Deej-AI-scanner.py --distpath $(OutputPath)Deej-AI --workpath obj --specpath obj" />
+  </Target>
+
+  <Target Name="Deej-AI-model"
+          Inputs="Backend/Deej-AI/Deej-AI-model"
+          Outputs="$(OutputPath)Deej-AI"
+          AfterTargets="Build">
+    <Copy SourceFiles="Backend/Deej-AI/Deej-AI-model"
+          DestinationFolder="$(OutputPath)Deej-AI"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

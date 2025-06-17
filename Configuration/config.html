@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <title>BetterMix</title>
+</head>
+<body>
+<div data-role="page" id="betterMixConfigurationPage" class="page type-interior pluginConfigurationPage fullWidthContent">
+    <div class="content-primary">
+        <div class="sectionTitleContainer">
+            <h1 class="sectionTitle">Better Mix</h1>
+            <a is="emby-linkbutton" class="raised raised-mini" style="margin-left: 2em; align-self: left;" target="_blank"
+                href="https://github.com/StergiosBinopoulos/jellyfin-plugin-bettermix">
+                <i class="md-icon button-icon button-icon-left secondaryText"></i>
+                <span>Help</span>
+            </a>
+        </div>
+
+        <form class="artworkConfigurationForm">
+            <div class="inputContainer">
+                <label>Choose a backend:</label>
+                <select id="backendSelection" is="emby-select" class="emby-select-withcolor emby-select" data-id="collectTypeSelect">
+                    <option value="deejai">Deej-AI</option>
+                    <option value="native">Native (Instant Mix)</option>
+                </select>
+                <div class="fieldDescription">Which service will be used to create the instant mix.</div>
+            </div>
+            <div id="deejai">
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" min="0" max="2" step="0.01" data-id="deejaiNoise" required="required" label="Noise" />
+                    <div class="fieldDescription">A higher noise will create a mix with greater randomness.</div>
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" min="0" max="200" step="1" data-id="deejaiLookback" required="required" label="Lookback" />
+                    <div class="fieldDescription">How far back the model will look to pick the next song.</div>
+                </div>
+                <div class="inputContainer">
+                    <input is="emby-input" type="number" min="0.0005" max="0.003" step="0.0001" data-id="deejaiEpsilon" required="required" label="Epsilon" />
+                    <div class="fieldDescription">The epsilon distance.</div>
+                </div>
+            </div>
+            <div id="native">
+            </div>
+            <button id="saveConfig" is="emby-button" type="submit" class="raised button-submit block">
+                <span>Save</span>
+            </button>
+        </form>
+    </div>
+
+<script type="text/javascript">
+    if (typeof BetterMix === 'undefined') {
+        const BetterMix = {
+            pluginId: "573ed94b-6a8e-4f7e-977a-c0aef8d0bbff",
+            btnSave: null,
+            comboBox: null,
+            pages: {},
+            updateVisibility: function () {
+                const selected = BetterMix.comboBox.value;
+                for (const key in BetterMix.pages) {
+                    BetterMix.pages[key].style.display = (BetterMix.pages[key].id === selected) ? 'block' : 'none';
+                }
+            },
+            saveConfig: function (e) {
+                e.preventDefault();
+
+                const config = {
+                    SelectedBackend: BetterMix.comboBox.value,
+                    DeejaiNoise: parseFloat(document.querySelector('[data-id="deejaiNoise"]').value),
+                    DeejaiLookback: parseInt(document.querySelector('[data-id="deejaiLookback"]').value),
+                    DeejaiEpsilon: parseFloat(document.querySelector('[data-id="deejaiEpsilon"]').value)
+                };
+
+                window.ApiClient.updatePluginConfiguration(BetterMix.pluginId, config)
+                    .then(result => Dashboard.processPluginConfigurationUpdateResult(result))
+                    .catch(err => console.error("Save failed:", err));
+            },
+            loadConfig: function () {
+                window.ApiClient.getPluginConfiguration(BetterMix.pluginId)
+                    .then(config => {
+                        console.log("Loaded config:", config);
+                        BetterMix.comboBox.value = config.SelectedBackend?? "deejai";
+                        document.querySelector('[data-id="deejaiNoise"]').value = config.DeejaiNoise ?? 0.2;
+                        document.querySelector('[data-id="deejaiLookback"]').value = config.DeejaiLookback ?? 3;
+                        document.querySelector('[data-id="deejaiEpsilon"]').value = config.DeejaiEpsilon ?? 0.001;
+                        BetterMix.updateVisibility();
+                    })
+                    .catch(err => console.error("Failed to load plugin config:", err));  
+            },
+            init: function () {
+                BetterMix.btnSave = document.querySelector("#saveConfig");
+                BetterMix.comboBox = document.querySelector("#backendSelection");
+                BetterMix.pages = {
+                    sec1: document.querySelector("#deejai"),
+                    sec2: document.querySelector("#native")
+                };
+
+                BetterMix.comboBox.addEventListener("change", BetterMix.updateVisibility);
+                BetterMix.btnSave.addEventListener("click", BetterMix.saveConfig);
+                BetterMix.loadConfig();
+
+                BetterMix.updateVisibility();
+            }
+        };
+
+        document.querySelector('#betterMixConfigurationPage').addEventListener("pageshow", function () {
+            BetterMix.init();
+        });
+    }
+</script>
+
+</div>
+</body>
+</html>
