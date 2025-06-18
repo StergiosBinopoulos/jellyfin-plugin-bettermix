@@ -17,8 +17,22 @@
 - Python 3.10 (to build the Deej-AI script executables)
 - NET 8.0 (to build the plugin)
 
-### 1. Install the plugin
+### 1. Install the plugin 
+### Download the latest release (Option 1)
 
+Download the plugin:
+```bash
+curl -L https://github.com/StergiosBinopoulos/jellyfin-plugin-bettermix/releases/download/v0.1.0/linux-x64.zip --output bettermix.zip
+```
+Unzip it and move it in your jellyfin server plugin directory:
+```bash
+unzip bettermix.zip
+sudo mv Jellyfin.Plugin.BetterMix /var/lib/jellyfin/plugins/Jellyfin.Plugin.BetterMix
+sudo chown -R jellyfin:jellyfin /var/lib/jellyfin/plugins/Jellyfin.Plugin.BetterMix/
+sudo systemctl restart jellyfin
+```
+
+### Build from source (Option 2)
 
 Clone the Repository
 
