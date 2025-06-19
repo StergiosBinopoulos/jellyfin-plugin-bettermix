@@ -15,7 +15,7 @@ public class DeejAiBackend : BetterMixBackendBase
     private readonly string m_scanBinaryPath = Path.Combine(m_pluginDirectory, "Deej-AI/Deej-AI-scanner");
     private readonly string m_modelPath = Path.Combine(m_pluginDirectory, "Deej-AI/Deej-AI-model");
     private readonly string m_generateBinaryPath = Path.Combine(m_pluginDirectory, "Deej-AI/Deej-AI-generator");
-    private readonly string m_picklesDir = Path.Combine(BetterMixPlugin.Instance.DataFolderPath, "Deej-AI/Pickles");
+    private readonly string m_picklesDir = Path.Combine(m_pluginDirectory, "Deej-AI/Pickles");
 
     private const string combinedPicklesDir = "mp3tovecs";
 
