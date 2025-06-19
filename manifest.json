@@ -1,0 +1,19 @@
+[
+  {
+    "guid": "573ed94b-6a8e-4f7e-977a-c0aef8d0bbff",
+    "name": "BetterMix",
+    "description": "BetterMix, a Jellyfin plugin for better Instant Mix.",
+    "owner": "Stergios Binopoulos",
+    "category": "General",
+    "versions": [
+      {
+        "version": "0.2.0",
+        "changelog": "Removed the reliance on a reverse proxy.",
+        "targetAbi": "10.10.1.0",
+        "targetOs": "linux",
+        "targetRuntime": "x64",
+        "sourceUrl": "https://github.com/StergiosBinopoulos/jellyfin-plugin-bettermix/releases/tag/v0.2.0/linux-x64.zip"
+      }
+    ]
+  }
+]
