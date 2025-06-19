@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using System.Diagnostics;
 using System.IO;
 using System.Collections.Generic;
@@ -9,9 +10,11 @@ namespace Jellyfin.Plugin.BetterMix.Backend;
 
 public class DeejAiBackend : BetterMixBackendBase
 {
-    private readonly string m_scanBinaryPath = Path.Combine(BetterMixPlugin.Instance.DataFolderPath, "Deej-AI/Deej-AI-scanner");
-    private readonly string m_modelPath = Path.Combine(BetterMixPlugin.Instance.DataFolderPath, "Deej-AI/Deej-AI-model");
-    private readonly string m_generateBinaryPath = Path.Combine(BetterMixPlugin.Instance.DataFolderPath, "Deej-AI/Deej-AI-generator");
+    static private readonly string m_pluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ??
+        throw new InvalidOperationException("Plugin directory not found.");
+    private readonly string m_scanBinaryPath = Path.Combine(m_pluginDirectory, "Deej-AI/Deej-AI-scanner");
+    private readonly string m_modelPath = Path.Combine(m_pluginDirectory, "Deej-AI/Deej-AI-model");
+    private readonly string m_generateBinaryPath = Path.Combine(m_pluginDirectory, "Deej-AI/Deej-AI-generator");
     private readonly string m_picklesDir = Path.Combine(BetterMixPlugin.Instance.DataFolderPath, "Deej-AI/Pickles");
 
     private const string combinedPicklesDir = "mp3tovecs";
