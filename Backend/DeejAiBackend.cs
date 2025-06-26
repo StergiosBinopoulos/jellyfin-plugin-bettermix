@@ -10,15 +10,12 @@ namespace Jellyfin.Plugin.BetterMix.Backend;
 
 public class DeejAiBackend : BetterMixBackendBase
 {
+    private const string m_deejAiDir = "Deej-AI";
     static private readonly string m_pluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ??
         throw new InvalidOperationException("Plugin directory not found.");
-    private readonly string m_scanBinaryPath = Path.Combine(m_pluginDirectory, "Deej-AI/Deej-AI-scanner");
-    private readonly string m_modelPath = Path.Combine(m_pluginDirectory, "Deej-AI/Deej-AI-model");
-    private readonly string m_generateBinaryPath = Path.Combine(m_pluginDirectory, "Deej-AI/Deej-AI-generator");
-    private readonly string m_picklesDir = Path.Combine(m_pluginDirectory, "Deej-AI/Pickles");
-
-    private const string combinedPicklesDir = "mp3tovecs";
-
+    private readonly string m_binaryPath = Path.Combine(m_pluginDirectory, m_deejAiDir, "deej-ai.cpp/bin/deej-ai");
+    private readonly string m_modelPath = Path.Combine(m_pluginDirectory, m_deejAiDir, "deej-ai.onnx");
+    private readonly string m_vecsDir = Path.Combine(m_pluginDirectory, m_deejAiDir, "audio_vecs");
 
     public override List<BaseItem>? GetPlaylistFromSong(string inputSongPath, int nsongs)
     {
@@ -27,14 +24,14 @@ public class DeejAiBackend : BetterMixBackendBase
         double lookback = config.DeejaiLookback;
         double epsilon = config.DeejaiEpsilon;
 
-        string arguments = m_picklesDir + " " + combinedPicklesDir + " --inputsong " + $"\"{inputSongPath}\"" + " --noise " + noise.ToString() + " --epsilon " + epsilon.ToString() + " --lookback " + lookback.ToString() + " --nsongs " + nsongs.ToString();
+        string arguments = " --generate append" + " --vec-dir " + m_vecsDir + " -i " + $"\"{inputSongPath}\"" + " --noise " + noise.ToString() + " --epsilon " + epsilon.ToString() + " --lookback " + lookback.ToString() + " --nsongs " + nsongs.ToString();
         BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: GetPlaylist: {args}", arguments);
-
+    
         using Process process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
-                FileName = m_generateBinaryPath,
+                FileName = m_binaryPath,
                 Arguments = arguments,
                 UseShellExecute = false,
                 CreateNoWindow = true,
@@ -47,7 +44,7 @@ public class DeejAiBackend : BetterMixBackendBase
         string output = process.StandardOutput.ReadToEnd();
         string error = process.StandardError.ReadToEnd();
         process.WaitForExit();
-
+        
         List<BaseItem> items = [];
         foreach (string path in output.Split("\n", StringSplitOptions.RemoveEmptyEntries))
         {
@@ -66,14 +63,14 @@ public class DeejAiBackend : BetterMixBackendBase
 
     protected override void ScanTask(BetterMixScanBatch batch)
     {
-        string arguments = m_picklesDir + " " + combinedPicklesDir + " --model " + m_modelPath + " --scan " + batch.GetFilepathsString();
+        string arguments = " --vec-dir " + m_vecsDir + " --model " + m_modelPath +  " --scan " + batch.GetFilepathsString(" --scan ");
         BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: Scan Task: {args}", arguments);
 
         using Process process = new()
         {
             StartInfo = new ProcessStartInfo
             {
-                FileName = m_scanBinaryPath,
+                FileName = m_binaryPath,
                 Arguments = arguments,
                 UseShellExecute = false,
                 CreateNoWindow = true
@@ -81,6 +78,8 @@ public class DeejAiBackend : BetterMixBackendBase
         };
 
         process.Start();
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
         process.WaitForExit();
     }
 }

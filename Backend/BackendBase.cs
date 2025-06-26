@@ -12,9 +12,9 @@ public class BetterMixScanBatch(HashSet<string> dirpaths)
 {
     private readonly HashSet<string> m_filepathsToScan = [.. dirpaths];
 
-    public string GetFilepathsString()
+    public string GetFilepathsString(string join = " ")
     {
-        return string.Join(" ", m_filepathsToScan.Select(s => $"\"{s}\""));
+        return string.Join(join, m_filepathsToScan.Select(s => $"\"{s}\""));
     }
 }
 
