@@ -25,7 +25,7 @@ public class DeejAiBackend : BetterMixBackendBase
         double epsilon = config.DeejaiEpsilon;
 
         string arguments = " --generate append" + " --vec-dir " + m_vecsDir + " -i " + $"\"{inputSongPath}\"" + " --noise " + noise.ToString() + " --epsilon " + epsilon.ToString() + " --lookback " + lookback.ToString() + " --nsongs " + nsongs.ToString();
-        BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: GetPlaylist: {args}", arguments);
+        BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: Executing Deej-AI GetPlaylist with arguments: {args}", arguments);
     
         using Process process = new Process
         {
@@ -44,7 +44,12 @@ public class DeejAiBackend : BetterMixBackendBase
         string output = process.StandardOutput.ReadToEnd();
         string error = process.StandardError.ReadToEnd();
         process.WaitForExit();
-        
+
+        if (!string.IsNullOrEmpty(error))
+        {
+            BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: Deej-AI GetPlaylist: {error}", error);
+        }
+
         List<BaseItem> items = [];
         foreach (string path in output.Split("\n", StringSplitOptions.RemoveEmptyEntries))
         {
@@ -64,7 +69,7 @@ public class DeejAiBackend : BetterMixBackendBase
     protected override void ScanTask(BetterMixScanBatch batch)
     {
         string arguments = " --vec-dir " + m_vecsDir + " --model " + m_modelPath +  " --scan " + batch.GetFilepathsString(" --scan ");
-        BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: Scan Task: {args}", arguments);
+        BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: Executing Deej-AI Scan with arguments: {args}", arguments);
 
         using Process process = new()
         {
@@ -73,7 +78,25 @@ public class DeejAiBackend : BetterMixBackendBase
                 FileName = m_binaryPath,
                 Arguments = arguments,
                 UseShellExecute = false,
-                CreateNoWindow = true
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            }
+        };
+
+        process.OutputDataReceived += (sender, e) =>
+        {
+            if (!string.IsNullOrWhiteSpace(e.Data))
+            {
+                BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: Deej-AI Scan Output: {line}", e.Data);
+            }
+        };
+
+        process.ErrorDataReceived += (sender, e) =>
+        {
+            if (!string.IsNullOrWhiteSpace(e.Data))
+            {
+                BetterMixPlugin.Instance.Logger.LogError("BetterMix: Deej-AI Scan Error: {line}", e.Data);
             }
         };
 
