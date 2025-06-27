@@ -22,31 +22,49 @@
     <EmbeddedResource Include="Configuration\config.html" />
   </ItemGroup>
 
-  <Target Name="Deej-AI-folder" AfterTargets="Build">
+  <Target Name="Deej-AI-clone"
+          AfterTargets="Build"
+          Condition="!Exists('deej-ai.cpp')">
+    <Exec Command= "git clone https://github.com/StergiosBinopoulos/deej-ai.cpp" />
+  </Target>
+
+  <Target Name="Deej-AI-build" 
+          AfterTargets="Build">
+    <Exec Command= "cmake -S deej-ai.cpp -B deej-ai.cpp/build -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release -DPACKAGE_NAME=deej-ai" />
+    <Exec Command= "ninja -C deej-ai.cpp/build package" />
+  </Target>
+
+  <Target Name="Deej-AI-copy" 
+          AfterTargets="Build">
+    <ItemGroup>
+      <Deej-AI-Package Include="deej-ai.cpp/package/deej-ai/**/*.*" />
+    </ItemGroup>
     <MakeDir Directories="$(OutputPath)Deej-AI" />
+    <MakeDir Directories="$(OutputPath)Deej-AI/deej-ai.cpp" />
+    <Copy SourceFiles="@(Deej-AI-Package)" DestinationFiles="@(Deej-AI-Package->'$(OutputPath)Deej-AI/deej-ai.cpp/%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
-  <Target Name="Deej-AI-generator"
-          Inputs="Backend/Deej-AI/Deej-AI-generator.py"
-          Outputs="$(OutputPath)Deej-AI/Deej-AI-generator.py"
+  <Target Name="Deej-AI-model-download" 
+          AfterTargets="Build"
+          Condition="!Exists('deej-ai.onnx')">
+    <Exec Command= "=curl -L https://huggingface.co/StergiosBinopoulos/deej-ai.onnx/resolve/main/deej-ai.onnx?download=true --output deej-ai.onnx" />
+  </Target>
+
+  <Target Name="Deej-AI-model-copy" 
           AfterTargets="Build">
-    <Exec Command="pyinstaller --onefile Backend/Deej-AI/Deej-AI-generator.py --distpath $(OutputPath)Deej-AI --workpath obj --specpath obj" />
+    <Copy SourceFiles="deej-ai.onnx" DestinationFiles="$(OutputPath)/Deej-AI/deej-ai.onnx" />
   </Target>
 
-  <Target Name="Deej-AI-scanner"
-          Inputs="Backend/Deej-AI/Deej-AI-scanner.py"
-          Outputs="$(OutputPath)Deej-AI/Deej-AI-scanner.py"
-          AfterTargets="Build">
-    <Exec Command="pyinstaller --onefile Backend/Deej-AI/Deej-AI-scanner.py --distpath $(OutputPath)Deej-AI --workpath obj --specpath obj" />
+  <Target Name="Deej-AI-model-license" 
+          AfterTargets="Build"
+          Condition="!Exists('$(OutputPath)LICENSE-Deej-AI-model')">
+    <Exec Command= "curl -L https://huggingface.co/datasets/choosealicense/licenses/resolve/main/markdown/gpl-3.0.md --output $(OutputPath)LICENSE-Deej-AI-model" />
   </Target>
 
-  <Target Name="Deej-AI-model"
-          Inputs="Backend/Deej-AI/Deej-AI-model"
-          Outputs="$(OutputPath)Deej-AI"
-          AfterTargets="Build">
-    <Copy SourceFiles="Backend/Deej-AI/Deej-AI-model"
-          DestinationFolder="$(OutputPath)Deej-AI"
-          SkipUnchangedFiles="true" />
+  <Target Name="LICENSE-copy" 
+          AfterTargets="Build"
+          Condition="!Exists('$(OutputPath)LICENSE')">
+    <Copy SourceFiles="LICENSE" DestinationFiles="$(OutputPath)LICENSE" />
   </Target>
-
+  
 </Project>
