@@ -12,7 +12,7 @@
         "targetAbi": "10.10.1.0",
         "targetOs": "linux",
         "targetRuntime": "x64",
-        "sourceUrl": "https://github.com/StergiosBinopoulos/jellyfin-plugin-bettermix/releases/download/v0.2.0/linux-x64.zip",
+        "sourceUrl": "https://github.com/StergiosBinopoulos/jellyfin-plugin-bettermix/releases/download/v0.2.1/linux-x64.zip",
         "checksum": "2ba35e417317c280d2239faacbe1fbcf"
       }
     ]
