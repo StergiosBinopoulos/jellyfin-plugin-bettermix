@@ -29,6 +29,12 @@ public abstract class BetterMixBackendBase
     readonly ConcurrentQueue<BetterMixScanBatch> m_batches = [];
     private readonly HashSet<string> m_dirpathsToScan = [];
 
+    public enum PlaylistType
+    {
+        FromAudio,
+        FromAlbum,
+    }
+
     public BetterMixBackendBase()
     {
         if (m_firstTimeConstructing)
@@ -38,8 +44,8 @@ public abstract class BetterMixBackendBase
         }
     }
 
-    public abstract List<BaseItem>? GetPlaylistFromSongs(List<string> inputSongPath, int nsongs);
-    
+    public abstract List<BaseItem>? GetPlaylist(List<string> inputSongPaths, int nsongs, PlaylistType type);
+
     public void GeneralScan()
     {
         m_batches.Enqueue(GeneralScanBatch());

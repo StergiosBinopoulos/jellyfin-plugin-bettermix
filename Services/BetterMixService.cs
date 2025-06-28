@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Jellyfin.Data.Entities;
 using Jellyfin.Extensions;
 using Jellyfin.Plugin.BetterMix.Extensions;
+using Jellyfin.Plugin.BetterMix.Backend;
 using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
 
 namespace Jellyfin.Plugin.BetterMix.Services;
@@ -60,7 +61,7 @@ public class BetterMixService(
         List<BaseItem>? items = null;
         if (item is Audio)
         {
-            items = BetterMixPlugin.Instance.ActiveBackend.GetPlaylistFromSongs([item.Path], numsongs);
+            items = BetterMixPlugin.Instance.ActiveBackend.GetPlaylist([item.Path], numsongs, BetterMixBackendBase.PlaylistType.FromAudio);
         }
         else if (item is MusicAlbum album)
         {    
@@ -69,7 +70,7 @@ public class BetterMixService(
                 .Select(child => child.Path)
                 .ToList() ?? new List<string>();
 
-            items = BetterMixPlugin.Instance.ActiveBackend.GetPlaylistFromSongs(inputItems, numsongs);
+            items = BetterMixPlugin.Instance.ActiveBackend.GetPlaylist(inputItems, numsongs, BetterMixBackendBase.PlaylistType.FromAlbum);
         }
 
         if (items is null)

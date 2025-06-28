@@ -31,30 +31,23 @@ public class DeejAiBackend : BetterMixBackendBase
         }
     }
 
-    public override List<BaseItem>? GetPlaylistFromSongs(List<string> inputSongPaths, int nsongs)
+    public override List<BaseItem>? GetPlaylist(List<string> inputSongPaths, int nsongs, PlaylistType type)
     {
         var config = BetterMixPlugin.Instance.Configuration;
         double noise = config.DeejaiNoise;
         double lookback = config.DeejaiLookback;
-        double epsilon = config.DeejaiEpsilon;
-        string method;
-        if (inputSongPaths.Count > 1)
-        {
-            method = "connect";
-            nsongs = 3;
-        }
-        else
-        {
-            method = "append";
-        }
-        if (inputSongPaths.Count > 40)
+        string method = config.DeejaiMethod;
+
+        if (type == PlaylistType.FromAlbum)
         {
             Shuffle(inputSongPaths);
             inputSongPaths = inputSongPaths.Take(40).ToList();
+            method = "connect";
+            nsongs = 3;
         }
-        string inputArgs = " -i " + string.Join(" -i ", inputSongPaths.Select(s => $"\"{s}\""));
 
-        string arguments = " --generate " + method + " --vec-dir " + m_vecsDir + inputArgs + " --noise " + noise.ToString() + " --epsilon " + epsilon.ToString() + " --lookback " + lookback.ToString() + " --nsongs " + nsongs.ToString();
+        string inputArgs = " -i " + string.Join(" -i ", inputSongPaths.Select(s => $"\"{s}\""));
+        string arguments = " --generate " + method + " --vec-dir " + m_vecsDir + inputArgs + " --noise " + noise.ToString() + " --lookback " + lookback.ToString() + " --nsongs " + nsongs.ToString();
         BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: Executing Deej-AI GetPlaylist with arguments: {args}", arguments);
 
         using Process process = new Process

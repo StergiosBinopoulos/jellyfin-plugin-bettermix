@@ -7,7 +7,7 @@ namespace Jellyfin.Plugin.BetterMix.Backend;
 
 public class NativeBackend : BetterMixBackendBase
 {
-    public override List<BaseItem>? GetPlaylistFromSongs(List<string> inputSongPaths, int nsongs)
+    public override List<BaseItem>? GetPlaylist(List<string> inputSongPaths, int nsongs, PlaylistType type)
     {
         return null;
     }

@@ -6,10 +6,11 @@ public class PluginConfiguration : BasePluginConfiguration
 {
     public string SelectedBackend { get; set; } = "deejai";
 
+    public string DeejaiMethod { get; set; } = "append";
+
     public double DeejaiNoise { get; set; } = 0.2;
 
     public int DeejaiLookback { get; set; } = 3;
 
-    public double DeejaiEpsilon { get; set; } = 0.001;
 }
 
