@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Controller.Entities;
+using Jellyfin.Plugin.BetterMix.Tasks;
+using System;
+using System.Numerics;
 
 namespace Jellyfin.Plugin.BetterMix.Backend;
 
@@ -20,25 +23,32 @@ public class BetterMixScanBatch(HashSet<string> dirpaths)
 
 public abstract class BetterMixBackendBase
 {
-    private const int m_delayMilliseconds = 5000;
+    private static bool m_firstTimeConstructing = true;
+    private const int m_delayMilliseconds = 2;
     private CancellationTokenSource m_cts = new();
-    private readonly ConcurrentQueue<BetterMixScanBatch> m_batches = [];
-    private int m_isRunning = 0;
-
+    readonly ConcurrentQueue<BetterMixScanBatch> m_batches = [];
     private readonly HashSet<string> m_dirpathsToScan = [];
 
     public BetterMixBackendBase()
     {
-        foreach (var child in BetterMixPlugin.Instance.LibraryManager.RootFolder.Children.OfType<Folder>())
+        if (m_firstTimeConstructing)
         {
-            AddDirectoryToScan(child.Path);
+            m_batches.Enqueue(GeneralScanBatch());
+            m_firstTimeConstructing = false;
         }
     }
 
-    public abstract List<BaseItem>? GetPlaylistFromSong(string inputSongPath, int nsongs);
+    public abstract List<BaseItem>? GetPlaylistFromSongs(List<string> inputSongPath, int nsongs);
+    
+    public void GeneralScan()
+    {
+        m_batches.Enqueue(GeneralScanBatch());
+        BetterMixPlugin.Instance.TaskManager.QueueScheduledTask<ScanTask>();
+    }
 
     public void AddDirectoryToScan(string dirpaths)
     {
+        BetterMixPlugin.Instance.Logger.LogInformation("adding directory");
         if (!string.IsNullOrEmpty(dirpaths))
         {
             m_dirpathsToScan.Add(dirpaths);
@@ -47,54 +57,31 @@ public abstract class BetterMixBackendBase
         m_cts = new CancellationTokenSource();
         var token = m_cts.Token;
         // schedule a scan after m_delayMilliseconds ms.
-        Task.Delay(m_delayMilliseconds, token).ContinueWith(CreateBatch, token, TaskContinuationOptions.OnlyOnRanToCompletion, TaskScheduler.Default);
+        Task.Delay(m_delayMilliseconds, token).ContinueWith(QueueBatch, token, TaskContinuationOptions.OnlyOnRanToCompletion, TaskScheduler.Default);
     }
 
-    protected abstract void ScanTask(BetterMixScanBatch batch);
+    public abstract void ScanTaskFunction(IProgress<double> progress, CancellationToken cancellationToken);
 
-    private void CreateBatch(Task t)
+    private static BetterMixScanBatch GeneralScanBatch()
+    {
+        HashSet<string> generelScanBatch = [];
+        foreach (var child in BetterMixPlugin.Instance.LibraryManager.RootFolder.Children.OfType<Folder>())
+        {
+            generelScanBatch.Add(child.Path);
+        }
+        return new BetterMixScanBatch(generelScanBatch);
+    }
+
+    private void QueueBatch(Task t)
     {
         m_batches.Enqueue(new BetterMixScanBatch(m_dirpathsToScan));
         m_dirpathsToScan.Clear();
-        if (!IsTaskRunning())
-        {
-            Task.Run(RunQueuedBatch);
-        }
+        BetterMixPlugin.Instance.TaskManager.QueueScheduledTask<ScanTask>();
     }
 
-    private bool IsTaskRunning()
+    protected BetterMixScanBatch? GetCurrentBatch()
     {
-        return Interlocked.CompareExchange(ref m_isRunning, 1, 1) == 1;
-    }
-
-    private void SetTaskRunningStatus(bool running)
-    {
-        if (running)
-        {
-            Interlocked.Exchange(ref m_isRunning, 1);
-        }
-        else
-        {
-            Interlocked.Exchange(ref m_isRunning, 0);
-        }
-    }
-
-    private void RunQueuedBatch()
-    {
-        BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: Running a batch scan.");
-        SetTaskRunningStatus(true);
-        if (m_batches.TryDequeue(out BetterMixScanBatch? batch))
-        {
-            ScanTask(batch);
-        }
-        
-        BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: Scan completed");
-
-        if (!m_batches.IsEmpty)
-        {
-            RunQueuedBatch();
-        }
-
-        SetTaskRunningStatus(false);
+        m_batches.TryDequeue(out BetterMixScanBatch? batch);
+        return batch;
     }
 }
