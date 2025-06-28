@@ -7,7 +7,7 @@
     "category": "General",
     "versions": [
       {
-        "version": "0.2.0",
+        "version": "0.2.1",
         "changelog": "Removed the reliance on a reverse proxy.",
         "targetAbi": "10.10.1.0",
         "targetOs": "linux",
