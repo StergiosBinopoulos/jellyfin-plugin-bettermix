@@ -7,7 +7,7 @@
     <AssemblyName>Jellyfin.Plugin.BetterMix</AssemblyName>
     <Authors>Stergios Binopoulos</Authors>
     <Description>BetterMix, a Jellyfin plugin for better Instant Mix.</Description>
-    <Version>0.2.0</Version>
+    <Version>0.2.1</Version>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
