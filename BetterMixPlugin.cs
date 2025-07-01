@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Jellyfin.Plugin.BetterMix.Configuration;
 using Jellyfin.Plugin.BetterMix.Backend;
 using Jellyfin.Plugin.BetterMix.Filters;
+using MediaBrowser.Model.Tasks;
+using Jellyfin.Plugin.BetterMix.Tasks;
 
 namespace Jellyfin.Plugin.BetterMix;
 
@@ -23,8 +25,9 @@ public class BetterMixPlugin : BasePlugin<PluginConfiguration>, IHasPluginConfig
     public static BetterMixPlugin Instance { get; private set; } = null!;
     public readonly ILogger<BetterMixPlugin> Logger;
     public readonly ILibraryManager LibraryManager;
-    public BetterMixBackendBase ActiveBackend;
+    public readonly ITaskManager TaskManager;
 
+    public BetterMixBackendBase ActiveBackend;
     public BetterMixPlugin(
         IApplicationPaths applicationPaths,
         IXmlSerializer xmlSerializer,
@@ -32,11 +35,13 @@ public class BetterMixPlugin : BasePlugin<PluginConfiguration>, IHasPluginConfig
         IServiceProvider serviceProvider,
         IActionDescriptorCollectionProvider provider,
         IHostApplicationLifetime hostApplicationLifetime,
+        ITaskManager taskManager,
         ILogger<BetterMixPlugin> logger)
         : base(applicationPaths, xmlSerializer)
     {
         Instance = this;
         LibraryManager = libraryManager;
+        TaskManager = taskManager;
         Logger = logger;
 
         if (Configuration.SelectedBackend == "deejai")
@@ -52,10 +57,19 @@ public class BetterMixPlugin : BasePlugin<PluginConfiguration>, IHasPluginConfig
         LibraryManager.ItemAdded += OnItemChanged;
         LibraryManager.ItemRemoved += OnItemChanged;
         LibraryManager.ItemUpdated += OnItemChanged;
+        TaskManager.TaskCompleted += OnTaskCompleted;
         ConfigurationChanged += OnConfigurationChanged;
 
 
         hostApplicationLifetime.ApplicationStarted.Register(() => { TryAddFilter(provider, serviceProvider); });
+    }
+
+    private void OnTaskCompleted(object? sender, TaskCompletionEventArgs e)
+    {
+        if (e.Task.Name == "Scan Media Library")
+        {
+            ActiveBackend.GeneralScan();
+        }
     }
 
     public BaseItem? GetItemFromPath(string path)
@@ -93,6 +107,7 @@ public class BetterMixPlugin : BasePlugin<PluginConfiguration>, IHasPluginConfig
             {
                 ActiveBackend = new NativeBackend();
             }
+            ActiveBackend.GeneralScan();
         }
     }
 
@@ -106,6 +121,12 @@ public class BetterMixPlugin : BasePlugin<PluginConfiguration>, IHasPluginConfig
         var count = provider.AddDynamicFilter<ItemInstantMixFilter>(serviceProvider, t =>
         {
             return t.MethodInfo.Name == "GetInstantMixFromItem"
+                && t.ControllerTypeInfo.FullName == "Jellyfin.Api.Controllers.InstantMixController";
+        });
+
+        count += provider.AddDynamicFilter<ItemInstantMixFilter>(serviceProvider, t =>
+        {
+            return t.MethodInfo.Name == "GetInstantMixFromAlbum"
                 && t.ControllerTypeInfo.FullName == "Jellyfin.Api.Controllers.InstantMixController";
         });
         Logger.LogInformation("BetterMix: {Count} action filter(s) added.", count);

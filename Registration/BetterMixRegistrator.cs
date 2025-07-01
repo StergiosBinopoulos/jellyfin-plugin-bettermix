@@ -2,7 +2,6 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
 using Microsoft.Extensions.DependencyInjection;
 using Jellyfin.Plugin.BetterMix.Services;
-using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.BetterMix.Registration;
 

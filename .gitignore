@@ -3,3 +3,5 @@ obj
 .venv
 .python-version
 Backend/Deej-AI/Deej-AI-model
+deej-ai.onnx
+deej-ai.cpp/

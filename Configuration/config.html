@@ -18,7 +18,7 @@
         <form class="artworkConfigurationForm">
             <div class="inputContainer">
                 <label>Choose a backend:</label>
-                <select id="backendSelection" is="emby-select" class="emby-select-withcolor emby-select" data-id="collectTypeSelect">
+                <select id="backendSelection" is="emby-select" class="emby-select-withcolor emby-select" data-id="backendSelect">
                     <option value="deejai">Deej-AI</option>
                     <option value="native">Native (Instant Mix)</option>
                 </select>
@@ -26,16 +26,23 @@
             </div>
             <div id="deejai">
                 <div class="inputContainer">
+                    <label>Choose a generate method:</label>
+                    <select id="methodSelection" is="emby-select" class="emby-select-withcolor emby-select" data-id="deejaiMethod">
+                        <option value="append">Continuous input using lookback (append)</option>
+                        <option value="cluster">Original input only (cluster)</option>
+                    </select>
+                    <div class="fieldDescription">
+                        <b>Continuous input:</b> The last n songs (lookback) will determine the next song.<br>
+                        <b>Original input:</b> Only the original input songs will determine the entire mix.
+                    </div>
+                </div>
+                <div class="inputContainer">
                     <input is="emby-input" type="number" min="0" max="2" step="0.01" data-id="deejaiNoise" required="required" label="Noise" />
                     <div class="fieldDescription">A higher noise will create a mix with greater randomness.</div>
                 </div>
-                <div class="inputContainer">
+                <div id="lookbackInputContainer" class="inputContainer">
                     <input is="emby-input" type="number" min="0" max="200" step="1" data-id="deejaiLookback" required="required" label="Lookback" />
                     <div class="fieldDescription">How far back the model will look to pick the next song.</div>
-                </div>
-                <div class="inputContainer">
-                    <input is="emby-input" type="number" min="0.0005" max="0.003" step="0.0001" data-id="deejaiEpsilon" required="required" label="Epsilon" />
-                    <div class="fieldDescription">The epsilon distance.</div>
                 </div>
             </div>
             <div id="native">
@@ -52,6 +59,7 @@
             pluginId: "573ed94b-6a8e-4f7e-977a-c0aef8d0bbff",
             btnSave: null,
             comboBox: null,
+            methodComboBox: null,
             pages: {},
             updateVisibility: function () {
                 const selected = BetterMix.comboBox.value;
@@ -59,14 +67,23 @@
                     BetterMix.pages[key].style.display = (BetterMix.pages[key].id === selected) ? 'block' : 'none';
                 }
             },
+            updateVisibilityMethod: function () {
+                const selected = BetterMix.methodComboBox.value;
+                if (selected === 'append') {
+                    document.querySelector('#lookbackInputContainer').style.display = 'block';
+                } else {
+                    document.querySelector('#lookbackInputContainer').style.display = 'none';
+                }
+                    
+            },
             saveConfig: function (e) {
                 e.preventDefault();
 
                 const config = {
                     SelectedBackend: BetterMix.comboBox.value,
+                    DeejaiMethod: document.querySelector('[data-id="deejaiMethod"]').value,
                     DeejaiNoise: parseFloat(document.querySelector('[data-id="deejaiNoise"]').value),
                     DeejaiLookback: parseInt(document.querySelector('[data-id="deejaiLookback"]').value),
-                    DeejaiEpsilon: parseFloat(document.querySelector('[data-id="deejaiEpsilon"]').value)
                 };
 
                 window.ApiClient.updatePluginConfiguration(BetterMix.pluginId, config)
@@ -78,22 +95,25 @@
                     .then(config => {
                         console.log("Loaded config:", config);
                         BetterMix.comboBox.value = config.SelectedBackend?? "deejai";
+                        document.querySelector('[data-id="deejaiMethod"]').value = config.DeejaiMethod ?? "append";
                         document.querySelector('[data-id="deejaiNoise"]').value = config.DeejaiNoise ?? 0.2;
                         document.querySelector('[data-id="deejaiLookback"]').value = config.DeejaiLookback ?? 3;
-                        document.querySelector('[data-id="deejaiEpsilon"]').value = config.DeejaiEpsilon ?? 0.001;
                         BetterMix.updateVisibility();
+                        BetterMix.updateVisibilityMethod();
                     })
                     .catch(err => console.error("Failed to load plugin config:", err));  
             },
             init: function () {
                 BetterMix.btnSave = document.querySelector("#saveConfig");
                 BetterMix.comboBox = document.querySelector("#backendSelection");
+                BetterMix.methodComboBox = document.querySelector("#methodSelection");
                 BetterMix.pages = {
                     sec1: document.querySelector("#deejai"),
                     sec2: document.querySelector("#native")
                 };
 
                 BetterMix.comboBox.addEventListener("change", BetterMix.updateVisibility);
+                BetterMix.methodComboBox.addEventListener("change", BetterMix.updateVisibilityMethod);
                 BetterMix.btnSave.addEventListener("click", BetterMix.saveConfig);
                 BetterMix.loadConfig();
 

@@ -13,6 +13,8 @@ using Microsoft.Extensions.Logging;
 using Jellyfin.Data.Entities;
 using Jellyfin.Extensions;
 using Jellyfin.Plugin.BetterMix.Extensions;
+using Jellyfin.Plugin.BetterMix.Backend;
+using MusicAlbum = MediaBrowser.Controller.Entities.Audio.MusicAlbum;
 
 namespace Jellyfin.Plugin.BetterMix.Services;
 
@@ -59,14 +61,23 @@ public class BetterMixService(
         List<BaseItem>? items = null;
         if (item is Audio)
         {
-            items = BetterMixPlugin.Instance.ActiveBackend.GetPlaylistFromSong(item.Path, numsongs);
+            items = BetterMixPlugin.Instance.ActiveBackend.GetPlaylist([item.Path], numsongs, BetterMixBackendBase.PlaylistType.FromAudio);
+        }
+        else if (item is MusicAlbum album)
+        {    
+            List<string> inputItems = album.Children?
+                .Where(child => child is Audio)
+                .Select(child => child.Path)
+                .ToList() ?? new List<string>();
+
+            items = BetterMixPlugin.Instance.ActiveBackend.GetPlaylist(inputItems, numsongs, BetterMixBackendBase.PlaylistType.FromAlbum);
         }
 
         if (items is null)
-        {
-            BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: Falling back to Native Instant Mix.");
-            items = m_musicManager.GetInstantMixFromItem(item, user, dtoOptions);
-        }
+            {
+                BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: Falling back to Native Instant Mix.");
+                items = m_musicManager.GetInstantMixFromItem(item, user, dtoOptions);
+            }
 
         // Use the original controller helper if needed to wrap the result
         var result = GetResult(items, user, numsongs, dtoOptions);

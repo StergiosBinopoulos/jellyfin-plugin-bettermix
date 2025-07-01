@@ -1,40 +1,60 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Diagnostics;
 using System.IO;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Controller.Entities;
+using System.Threading;
 
 namespace Jellyfin.Plugin.BetterMix.Backend;
 
 public class DeejAiBackend : BetterMixBackendBase
 {
+    private const string m_deejAiDir = "Deej-AI";
     static private readonly string m_pluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ??
         throw new InvalidOperationException("Plugin directory not found.");
-    private readonly string m_scanBinaryPath = Path.Combine(m_pluginDirectory, "Deej-AI/Deej-AI-scanner");
-    private readonly string m_modelPath = Path.Combine(m_pluginDirectory, "Deej-AI/Deej-AI-model");
-    private readonly string m_generateBinaryPath = Path.Combine(m_pluginDirectory, "Deej-AI/Deej-AI-generator");
-    private readonly string m_picklesDir = Path.Combine(m_pluginDirectory, "Deej-AI/Pickles");
+    private readonly string m_binaryPath = Path.Combine(m_pluginDirectory, m_deejAiDir, "deej-ai.cpp/bin/deej-ai");
+    private readonly string m_modelPath = Path.Combine(m_pluginDirectory, m_deejAiDir, "deej-ai.onnx");
+    private readonly string m_vecsDir = Path.Combine(m_pluginDirectory, m_deejAiDir, "audio_vecs");
 
-    private const string combinedPicklesDir = "mp3tovecs";
+    private void Shuffle<T>(List<T> list)
+    {
+        Random rng = new Random();
+        int n = list.Count;
+        while (n > 1)
+        {
+            n--;
+            int k = rng.Next(n + 1);
+            (list[k], list[n]) = (list[n], list[k]); // tuple swap
+        }
+    }
 
-
-    public override List<BaseItem>? GetPlaylistFromSong(string inputSongPath, int nsongs)
+    public override List<BaseItem>? GetPlaylist(List<string> inputSongPaths, int nsongs, PlaylistType type)
     {
         var config = BetterMixPlugin.Instance.Configuration;
         double noise = config.DeejaiNoise;
         double lookback = config.DeejaiLookback;
-        double epsilon = config.DeejaiEpsilon;
+        string method = config.DeejaiMethod;
 
-        string arguments = m_picklesDir + " " + combinedPicklesDir + " --inputsong " + $"\"{inputSongPath}\"" + " --noise " + noise.ToString() + " --epsilon " + epsilon.ToString() + " --lookback " + lookback.ToString() + " --nsongs " + nsongs.ToString();
-        BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: GetPlaylist: {args}", arguments);
+        if (type == PlaylistType.FromAlbum)
+        {
+            Shuffle(inputSongPaths);
+            inputSongPaths = inputSongPaths.Take(40).ToList();
+            method = "connect";
+            nsongs = 3;
+        }
+
+        string inputArgs = " -i " + string.Join(" -i ", inputSongPaths.Select(s => $"\"{s}\""));
+        string arguments = " --generate " + method + " --vec-dir " + m_vecsDir + inputArgs + " --noise " + noise.ToString() + " --lookback " + lookback.ToString() + " --nsongs " + nsongs.ToString();
+        BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: Executing Deej-AI GetPlaylist with arguments: {args}", arguments);
 
         using Process process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
-                FileName = m_generateBinaryPath,
+                FileName = m_binaryPath,
                 Arguments = arguments,
                 UseShellExecute = false,
                 CreateNoWindow = true,
@@ -47,6 +67,11 @@ public class DeejAiBackend : BetterMixBackendBase
         string output = process.StandardOutput.ReadToEnd();
         string error = process.StandardError.ReadToEnd();
         process.WaitForExit();
+
+        if (!string.IsNullOrEmpty(error))
+        {
+            BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: Deej-AI GetPlaylist: {error}", error);
+        }
 
         List<BaseItem> items = [];
         foreach (string path in output.Split("\n", StringSplitOptions.RemoveEmptyEntries))
@@ -64,23 +89,80 @@ public class DeejAiBackend : BetterMixBackendBase
         return items;
     }
 
-    protected override void ScanTask(BetterMixScanBatch batch)
+    public override void ScanTaskFunction(IProgress<double> progress, CancellationToken cancellationToken)
     {
-        string arguments = m_picklesDir + " " + combinedPicklesDir + " --model " + m_modelPath + " --scan " + batch.GetFilepathsString();
-        BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: Scan Task: {args}", arguments);
+        var batch = GetCurrentBatch();
+        if (batch == null)
+        {
+            return;
+        }
+        string arguments = " --vec-dir " + m_vecsDir + " --model " + m_modelPath +  " --scan " + batch.GetFilepathsString(" --scan ");
+        BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: Executing Deej-AI Scan with arguments: {args}", arguments);
 
         using Process process = new()
         {
             StartInfo = new ProcessStartInfo
             {
-                FileName = m_scanBinaryPath,
+                FileName = m_binaryPath,
                 Arguments = arguments,
                 UseShellExecute = false,
-                CreateNoWindow = true
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            }
+        };
+
+        process.OutputDataReceived += (sender, e) =>
+        {
+            if (!string.IsNullOrWhiteSpace(e.Data))
+            {
+                BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: Deej-AI Scan Output: {line}", e.Data);
+                var match = System.Text.RegularExpressions.Regex.Match(e.Data, @"Scan progress: (\d+)\s*/\s*(\d+)");
+                if (match.Success)
+                {
+                    if (int.TryParse(match.Groups[1].Value, out int current) &&
+                        int.TryParse(match.Groups[2].Value, out int total) &&
+                        total > 0)
+                    {
+                        double percent = (double)current / total * 100.0;
+                        progress.Report(percent);
+                    }
+                }
+            }
+        };
+
+        process.ErrorDataReceived += (sender, e) =>
+        {
+            if (!string.IsNullOrWhiteSpace(e.Data))
+            {
+                BetterMixPlugin.Instance.Logger.LogError("BetterMix: Deej-AI Scan Error: {line}", e.Data);
             }
         };
 
         process.Start();
-        process.WaitForExit();
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+
+        // Monitor cancellation and wait for exit with short timeouts to check cancellation frequently
+        while (!process.WaitForExit(500))
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    if (!process.HasExited)
+                        process.Kill();
+                }
+                catch (Exception ex)
+                {
+                    BetterMixPlugin.Instance.Logger.LogError("BetterMix: Failed to kill process on cancellation: {error}", ex.Message);
+                }
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        progress.Report(100);  
     }
 }
