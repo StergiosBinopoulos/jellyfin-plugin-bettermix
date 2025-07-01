@@ -37,6 +37,7 @@ Find the BetterMix Plugin in the catalog and install.
 - **C++20**
 - **CMake** ≥ 3.14
 - **Ninja**
+- **git**
 - **ffmpeg libraries**
 - **curl** (to download the model)
 
