@@ -47,7 +47,7 @@
   <Target Name="Deej-AI-model-download" 
           AfterTargets="Build"
           Condition="!Exists('deej-ai.onnx')">
-    <Exec Command= "=curl -L https://huggingface.co/StergiosBinopoulos/deej-ai.onnx/resolve/main/deej-ai.onnx?download=true --output deej-ai.onnx" />
+    <Exec Command="curl -L https://huggingface.co/StergiosBinopoulos/deej-ai.onnx/resolve/main/deej-ai.onnx?download=true --output deej-ai.onnx" />
   </Target>
 
   <Target Name="Deej-AI-model-copy" 
