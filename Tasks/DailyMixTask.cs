@@ -21,10 +21,7 @@ public class DailyMixTask(DailyMixService DailyMixService) : IScheduledTask
 
     public Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
-        return Task.Run(() =>
-        {
-            m_DailyMixService.CreateDailyMixes();
-        });
+        return m_DailyMixService.CreateDailyMixes();
     }
 
     public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
