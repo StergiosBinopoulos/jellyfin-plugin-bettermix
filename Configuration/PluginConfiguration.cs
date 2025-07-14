@@ -26,7 +26,7 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public string DeejaiMethod { get; set; } = "append";
 
-    public double DeejaiNoise { get; set; } = 0.2;
+    public double DeejaiNoise { get; set; } = 0.01;
 
     public int DeejaiLookback { get; set; } = 3;
 

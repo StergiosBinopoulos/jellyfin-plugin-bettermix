@@ -177,7 +177,7 @@
                         console.log("Loaded config:", config);
                         BetterMix.comboBox.value = config.SelectedBackend?? "deejai";
                         document.querySelector('[data-id="deejaiMethod"]').value = config.DeejaiMethod ?? "append";
-                        document.querySelector('[data-id="deejaiNoise"]').value = config.DeejaiNoise ?? 0.2;
+                        document.querySelector('[data-id="deejaiNoise"]').value = config.DeejaiNoise ?? 0.01;
                         document.querySelector('[data-id="deejaiLookback"]').value = config.DeejaiLookback ?? 3;
 
                         for (let i = 0; i < config.DailyMixes.length; i++) {
