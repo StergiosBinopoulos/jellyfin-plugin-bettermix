@@ -10,5 +10,6 @@ public class BetterMixRegistrator : IPluginServiceRegistrator
     public void RegisterServices(IServiceCollection serviceCollection, IServerApplicationHost applicationHost)
     {
         serviceCollection.AddSingleton<BetterMixService>();
+        serviceCollection.AddSingleton<DailyMixService>();
     }
 }

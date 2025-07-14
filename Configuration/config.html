@@ -16,6 +16,8 @@
         </div>
 
         <form class="artworkConfigurationForm">
+            <h2 class="sectionTitle">Instant Mix</h1>
+            <hr class="solid">
             <div class="inputContainer">
                 <label>Choose a backend:</label>
                 <select id="backendSelection" is="emby-select" class="emby-select-withcolor emby-select" data-id="backendSelect">
@@ -47,11 +49,52 @@
             </div>
             <div id="native">
             </div>
+            <h2 class="sectionTitle">Daily Mix</h1>
+            <hr class="solid">
+            <div id="dailyMixWrapper"></div>
+            <button id="btnAddDailyMix" is="emby-button" type="button" class="raised button block">
+                <span>Add new Daily Mix</span>
+            </button>
+            <br />
             <button id="saveConfig" is="emby-button" type="submit" class="raised button-submit block">
                 <span>Save</span>
             </button>
         </form>
     </div>
+
+    <template id="templateDailyMix">
+        <div data-id="dailyMix">
+            <div class="inputContainer">
+                <input is="emby-input" type="text" data-id="dailyMixName" required="required" label="Name" />
+                <span>The name of the generated playlist.</span>
+            </div>
+            <div class="inputContainer">
+                <label>Sample method:</label>
+                <select id="sampleMethodSelection" is="emby-select" class="emby-select-withcolor emby-select" data-id="dailyMixSampleMethod">
+                    <option value="Top50">Sample from top 50</option>
+                    <option value="Top100">Sample from top 100</option>
+                    <option value="Top200">Sample from top 200</option>
+                    <option value="RandomArtist">Random artist</option>
+                    <option value="RandomSongs">Random songs</option>
+                </select>
+                <div class="fieldDescription">
+                    The method used to create the input for the playlist generation.
+                </div>
+            </div>
+            <div class="inputContainer">
+                <input is="emby-input" type="number" min="1" max="30" step="1" data-id="dailyMixInputSize" required="required" label="Input size" />
+                <div class="fieldDescription">The number of songs to be sampled.</div>
+            </div>
+            <div class="inputContainer">
+                <input is="emby-input" type="number" min="2" max="100" step="1" data-id="dailyMixOutputSize" required="required" label="Output size" />
+                <div class="fieldDescription">The number of songs of the generated playlist.</div>
+            </div>
+            <button id="btnRemoveDailyMix" is="emby-button" type="button" class="raised button block">
+                <span>Remove Daily Mix</span>
+            </button>
+            <hr class="solid">
+        </div>
+    </template>
 
 <script type="text/javascript">
     if (typeof BetterMix === 'undefined') {
@@ -60,7 +103,32 @@
             btnSave: null,
             comboBox: null,
             methodComboBox: null,
+            template: document.querySelector("#templateDailyMix"),
+            btnAddDailyMix: document.querySelector("#btnAddDailyMix"),
+            dailyMixWrapper: document.querySelector("#dailyMixWrapper"),
             pages: {},
+            addDailyMix: function (dailyMix) {
+                const template = BetterMix.template.cloneNode(true).content;
+                template.querySelector("[data-id=dailyMixName]").value = dailyMix.Name || "";
+                template.querySelector("[data-id=dailyMixSampleMethod]").value = dailyMix.SampleMethod || "";
+                template.querySelector("[data-id=dailyMixInputSize]").value = dailyMix.InputSize || 1;
+                template.querySelector("[data-id=dailyMixOutputSize]").value = dailyMix.OutputSize || 2;
+
+                const el = BetterMix.dailyMixWrapper.appendChild(template);
+            },
+            addNewDailyMix: function () {
+                const DailyMix = {
+                    Name: "DailyMix",
+                    SampleMethod: "Top100",
+                    InputSize: 20,
+                    OutputSize: 80
+                };
+                BetterMix.addDailyMix(DailyMix);
+            },
+            removeDailyMix: function (elem) {
+                elem.remove();
+            },
+
             updateVisibility: function () {
                 const selected = BetterMix.comboBox.value;
                 for (const key in BetterMix.pages) {
@@ -84,7 +152,20 @@
                     DeejaiMethod: document.querySelector('[data-id="deejaiMethod"]').value,
                     DeejaiNoise: parseFloat(document.querySelector('[data-id="deejaiNoise"]').value),
                     DeejaiLookback: parseInt(document.querySelector('[data-id="deejaiLookback"]').value),
+                    DailyMixes: []
                 };
+
+                const configs = document.querySelectorAll("[data-id=dailyMix]");
+                for (let i = 0; i < configs.length; i++) {
+                    const mix = {
+                        Name: configs[i].querySelector("[data-id=dailyMixName]").value,
+                        SampleMethod: configs[i].querySelector("[data-id=dailyMixSampleMethod]").value,
+                        InputSize: parseInt(configs[i].querySelector("[data-id=dailyMixInputSize]").value),
+                        OutputSize: parseInt(configs[i].querySelector("[data-id=dailyMixOutputSize]").value)
+                    };
+
+                    config.DailyMixes.push(mix);
+                }
 
                 window.ApiClient.updatePluginConfiguration(BetterMix.pluginId, config)
                     .then(result => Dashboard.processPluginConfigurationUpdateResult(result))
@@ -98,6 +179,11 @@
                         document.querySelector('[data-id="deejaiMethod"]').value = config.DeejaiMethod ?? "append";
                         document.querySelector('[data-id="deejaiNoise"]').value = config.DeejaiNoise ?? 0.2;
                         document.querySelector('[data-id="deejaiLookback"]').value = config.DeejaiLookback ?? 3;
+
+                        for (let i = 0; i < config.DailyMixes.length; i++) {
+                            BetterMix.addDailyMix(config.DailyMixes[i]);
+                        }
+
                         BetterMix.updateVisibility();
                         BetterMix.updateVisibilityMethod();
                     })
@@ -114,9 +200,15 @@
 
                 BetterMix.comboBox.addEventListener("change", BetterMix.updateVisibility);
                 BetterMix.methodComboBox.addEventListener("change", BetterMix.updateVisibilityMethod);
+                BetterMix.btnAddDailyMix.addEventListener("click", BetterMix.addNewDailyMix);
                 BetterMix.btnSave.addEventListener("click", BetterMix.saveConfig);
+                BetterMix.dailyMixWrapper.addEventListener("click", (event) => {
+                    if (event.target.id == "btnRemoveDailyMix") {
+                        const elem = event.target.closest("[data-id=dailyMix]");
+                        BetterMix.removeDailyMix(elem);
+                    }
+                });
                 BetterMix.loadConfig();
-
                 BetterMix.updateVisibility();
             }
         };
