@@ -31,7 +31,7 @@
 
   <Target Name="Deej-AI-build" 
           AfterTargets="Build">
-    <Exec Command= "cmake -S deej-ai.cpp -B deej-ai.cpp/build -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release -DPACKAGE_NAME=deej-ai" />
+    <Exec Command= "cmake -S deej-ai.cpp -B deej-ai.cpp/build -G Ninja -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Release -DPACKAGE_NAME=deej-ai" />
     <Exec Command= "ninja -C deej-ai.cpp/build package" />
   </Target>
 
