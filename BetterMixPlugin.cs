@@ -4,16 +4,16 @@ using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Plugins;
+using MediaBrowser.Model.Tasks;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.MediaEncoding;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Jellyfin.Plugin.BetterMix.Configuration;
 using Jellyfin.Plugin.BetterMix.Backend;
 using Jellyfin.Plugin.BetterMix.Filters;
-using MediaBrowser.Model.Tasks;
-using Jellyfin.Plugin.BetterMix.Tasks;
 
 namespace Jellyfin.Plugin.BetterMix;
 
@@ -26,6 +26,7 @@ public class BetterMixPlugin : BasePlugin<PluginConfiguration>, IHasPluginConfig
     public readonly ILogger<BetterMixPlugin> Logger;
     public readonly ILibraryManager LibraryManager;
     public readonly ITaskManager TaskManager;
+    private readonly IMediaEncoder m_mediaEncoder;
 
     public BetterMixBackendBase ActiveBackend;
     public BetterMixPlugin(
@@ -36,6 +37,7 @@ public class BetterMixPlugin : BasePlugin<PluginConfiguration>, IHasPluginConfig
         IActionDescriptorCollectionProvider provider,
         IHostApplicationLifetime hostApplicationLifetime,
         ITaskManager taskManager,
+        IMediaEncoder mediaEncoder,
         ILogger<BetterMixPlugin> logger)
         : base(applicationPaths, xmlSerializer)
     {
@@ -43,6 +45,7 @@ public class BetterMixPlugin : BasePlugin<PluginConfiguration>, IHasPluginConfig
         LibraryManager = libraryManager;
         TaskManager = taskManager;
         Logger = logger;
+        m_mediaEncoder = mediaEncoder;
 
         if (Configuration.SelectedBackend == "deejai")
         {
@@ -75,10 +78,6 @@ public class BetterMixPlugin : BasePlugin<PluginConfiguration>, IHasPluginConfig
     public BaseItem? GetItemFromPath(string path)
     {
         BaseItem? item = LibraryManager.FindByPath(path, false);
-        if (item == null)
-        {
-            return null;
-        }
         return item;
     }
 
@@ -89,6 +88,11 @@ public class BetterMixPlugin : BasePlugin<PluginConfiguration>, IHasPluginConfig
             Name = "BetterMixConfig",
             EmbeddedResourcePath = GetType().Namespace + ".Configuration.config.html",
         };
+    }
+
+    public string? FFmpegPath()
+    {
+        return m_mediaEncoder.EncoderPath;
     }
 
     internal void OnConfigurationChanged(object? sender, BasePluginConfiguration e)
