@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging;
 using MediaBrowser.Controller.Entities;
 using Jellyfin.Plugin.BetterMix.Tasks;
 using System;
-using System.Numerics;
 
 namespace Jellyfin.Plugin.BetterMix.Backend;
 
