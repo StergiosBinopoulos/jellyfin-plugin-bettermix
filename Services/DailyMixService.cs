@@ -32,36 +32,6 @@ public class DailyMixService(IPlaylistManager playlistManager, ILibraryManager l
 
     public async Task CreateDailyMixes()
     {
-        DeejAiBackend deejai = new();
-        var config = BetterMixPlugin.Instance.Configuration;
-        List<string> newGuids = [];
-
-        foreach (var user in m_userManager.Users)
-        {
-            foreach (var mix in config.DailyMixes)
-            {
-                IReadOnlyList<BaseItem> inputSongs = CreateInputSample(mix.SampleMethod, mix.InputSize, user);
-                List<string> inputSongPaths = inputSongs.Select(item => item.Path).ToList();
-                List<BaseItem>? items = deejai.GetPlaylist(inputSongPaths, mix.OutputSize, 0.01, 3, "cluster --reorder-output ");
-                if (items == null)
-                {
-                    continue;
-                }
-
-                var request = new PlaylistCreationRequest
-                {
-                    Name = mix.Name,
-                    ItemIdList = items.Select(item => item.Id).ToArray(),
-                    MediaType = MediaType.Audio,
-                    UserId = user.Id,
-                    Public = false
-                };
-
-                var guid = await m_playlistManager.CreatePlaylist(request);
-                newGuids.Add(guid.Id);
-            }
-        }
-
         // remove old mixes
         DailyMixData data = new();
         if (File.Exists(m_dataFilePath))
@@ -83,6 +53,39 @@ public class DailyMixService(IPlaylistManager playlistManager, ILibraryManager l
             }
         }   
 
+        DeejAiBackend deejai = new();
+        var config = BetterMixPlugin.Instance.Configuration;
+        List<string> newGuids = [];
+        foreach (var user in m_userManager.Users)
+        {
+            foreach (var mix in config.DailyMixes)
+            {
+                IReadOnlyList<BaseItem> inputSongs = CreateInputSample(mix.SampleMethod, mix.InputSize, user);
+                if (inputSongs.Count < 1)
+                {
+                    continue;
+                }
+                List<string> inputSongPaths = inputSongs.Select(item => item.Path).ToList();
+                List<BaseItem>? items = deejai.GetPlaylist(inputSongPaths, mix.OutputSize, 0.01, 3, "cluster --reorder-output ");
+                if (items == null)
+                {
+                    continue;
+                }
+
+                var request = new PlaylistCreationRequest
+                {
+                    Name = string.Format("{0} ({1})", mix.Name, user.Username),
+                    ItemIdList = items.Select(item => item.Id).ToArray(),
+                    MediaType = MediaType.Audio,
+                    UserId = user.Id,
+                    Public = false
+                };
+
+                var guid = await m_playlistManager.CreatePlaylist(request);
+                newGuids.Add(guid.Id);
+            }
+        }
+
         data.Ids = newGuids;
         string line = string.Join("\n", data.Ids);
         File.WriteAllText(m_dataFilePath, line);
@@ -91,7 +94,6 @@ public class DailyMixService(IPlaylistManager playlistManager, ILibraryManager l
     public IReadOnlyList<BaseItem> CreateInputSample(SampleMethod method, int size, User user)
     {
         IReadOnlyList<(ItemSortBy OrderBy, SortOrder SortOrder)> order = [(ItemSortBy.Random, SortOrder.Ascending)];
-        List<Guid> artists = new();
         int limit = size;
         switch (method)
         {
@@ -108,26 +110,40 @@ public class DailyMixService(IPlaylistManager playlistManager, ILibraryManager l
                 limit = 200;
                 break;
             case SampleMethod.RandomArtist:
-                var randomArtistResult = m_libraryManager.GetArtists(new InternalItemsQuery
+                var rd = new Random();
+                var artists = m_libraryManager.GetArtists(new InternalItemsQuery
                 {
-                    OrderBy = [(ItemSortBy.Random, SortOrder.Ascending)],
-                    Limit = 1,
+                    OrderBy = order,
+                    Limit = 100,
                     User = user
-                });
-                var (Item, ItemCounts) = randomArtistResult.Items.FirstOrDefault();
-                artists.Add(Item.Id);
-                break;
+                }).Items.OrderBy(_ => rd.Next()).ToList();
+                foreach (var artist in artists)
+                {
+                    var artistSongResult = m_libraryManager.GetItemsResult(new InternalItemsQuery
+                    {
+                        IncludeItemTypes = [BaseItemKind.Audio],
+                        ArtistIds = [artist.Item.Id],
+                        OrderBy = order,
+                        Limit = size,
+                        User = user
+                    });
+
+                    // find an artist with at least 5 songs
+                    if (artistSongResult.Items.Count > 4 || artistSongResult.Items.Count > size)
+                    {
+                        var artistShuffled = artistSongResult.Items.OrderBy(_ => rd.Next()).ToList();
+                        return artistShuffled.Take(size).ToList();
+                    } 
+                }
+                return [];
             case SampleMethod.RandomSongs:
             default:
                 break;
         }
 
-
         var result = m_libraryManager.GetItemsResult(new InternalItemsQuery
         {
             IncludeItemTypes = [BaseItemKind.Audio],
-            ArtistIds = artists.ToArray(),
-            AlbumArtistIds = artists.ToArray(),
             OrderBy = order,
             Limit = limit,
             User = user
