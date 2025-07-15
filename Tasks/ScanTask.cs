@@ -26,8 +26,8 @@ public class ScanTask : IScheduledTask
 
     public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
     {
-        return new[]
-            {
+        return
+        [
             new TaskTriggerInfo
             {
                 Type = "StartupTrigger"
@@ -37,6 +37,6 @@ public class ScanTask : IScheduledTask
                 Type = "DailyTrigger",
                 TimeOfDayTicks = TimeSpan.FromHours(3).Ticks
             }
-        };
+        ];
     }
 }
