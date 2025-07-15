@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Jellyfin.Plugin.BetterMix.Configuration;
 using Jellyfin.Plugin.BetterMix.Backend;
 using Jellyfin.Plugin.BetterMix.Filters;
+using MediaBrowser.Controller.Entities.Audio;
 
 namespace Jellyfin.Plugin.BetterMix;
 
@@ -117,7 +118,10 @@ public class BetterMixPlugin : BasePlugin<PluginConfiguration>, IHasPluginConfig
 
     private void OnItemChanged(object? sender, ItemChangeEventArgs e)
     {
-        ActiveBackend.AddDirectoryToScan(e.Item.ContainingFolderPath);
+        if (e.Item is Audio)
+        {
+            ActiveBackend.AddDirectoryToScan(e.Item.ContainingFolderPath);
+        }
     }
 
     private void TryAddFilter(IActionDescriptorCollectionProvider provider, IServiceProvider serviceProvider)
