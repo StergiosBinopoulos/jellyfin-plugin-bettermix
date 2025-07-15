@@ -7,7 +7,7 @@
     <AssemblyName>Jellyfin.Plugin.BetterMix</AssemblyName>
     <Authors>Stergios Binopoulos</Authors>
     <Description>BetterMix, a Jellyfin plugin for better Instant Mix.</Description>
-    <Version>0.3.1</Version>
+    <Version>0.4.0</Version>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
@@ -26,12 +26,12 @@
           AfterTargets="Build"
           Condition="!Exists('deej-ai.cpp')">
     <Exec Command= "git clone https://github.com/StergiosBinopoulos/deej-ai.cpp" />
-    <Exec Command= "git -C deej-ai.cpp checkout v0.1.1" />
+    <Exec Command= "git -C deej-ai.cpp checkout v0.2.0" />
   </Target>
 
   <Target Name="Deej-AI-build" 
           AfterTargets="Build">
-    <Exec Command= "cmake -S deej-ai.cpp -B deej-ai.cpp/build -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release -DPACKAGE_NAME=deej-ai" />
+    <Exec Command= "cmake -S deej-ai.cpp -B deej-ai.cpp/build -G Ninja -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Release -DPACKAGE_NAME=deej-ai" />
     <Exec Command= "ninja -C deej-ai.cpp/build package" />
   </Target>
 

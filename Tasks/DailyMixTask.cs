@@ -3,25 +3,25 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Model.Tasks;
+using Jellyfin.Plugin.BetterMix.Services;
 
 namespace Jellyfin.Plugin.BetterMix.Tasks;
 
-public class ScanTask : IScheduledTask
+public class DailyMixTask(DailyMixService DailyMixService) : IScheduledTask
 {
-    public string Name => "BetterMix Scan Task";
+    private readonly DailyMixService m_DailyMixService = DailyMixService;
 
-    public string Description => "Scan the music library to enable playlist generation.";
+    public string Name => "BetterMix Daily Mix Task";
+
+    public string Description => "Generate daily playlists for each user.";
 
     public string Category => "Library";
 
-    public string Key => "BetterMixScanTask";
+    public string Key => "BetterMixDailyMixTask";
 
     public Task ExecuteAsync(IProgress<double> progress, CancellationToken cancellationToken)
     {
-        return Task.Run(() =>
-        {
-            BetterMixPlugin.Instance.ActiveBackend.ScanTaskFunction(progress, cancellationToken);
-        });
+        return m_DailyMixService.CreateDailyMixes();
     }
 
     public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
@@ -30,12 +30,8 @@ public class ScanTask : IScheduledTask
         [
             new TaskTriggerInfo
             {
-                Type = "StartupTrigger"
-            },
-            new TaskTriggerInfo
-            {
                 Type = "DailyTrigger",
-                TimeOfDayTicks = TimeSpan.FromHours(3).Ticks
+                TimeOfDayTicks = TimeSpan.FromHours(0).Ticks
             }
         ];
     }

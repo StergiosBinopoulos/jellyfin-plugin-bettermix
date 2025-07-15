@@ -35,17 +35,27 @@ public class DeejAiBackend : BetterMixBackendBase
     {
         var config = BetterMixPlugin.Instance.Configuration;
         double noise = config.DeejaiNoise;
-        double lookback = config.DeejaiLookback;
+        int lookback = config.DeejaiLookback;
         string method = config.DeejaiMethod;
 
         if (type == PlaylistType.FromAlbum)
         {
             Shuffle(inputSongPaths);
-            inputSongPaths = inputSongPaths.Take(40).ToList();
-            method = "connect";
-            nsongs = 3;
+            inputSongPaths = inputSongPaths.Take(30).ToList();
+            method = "cluster --reorder-output ";
+            nsongs = inputSongPaths.Count * 2;
         }
+        return GetPlaylist(inputSongPaths, nsongs, noise, lookback, method);
+    }
 
+    public List<BaseItem>? GetPlaylist(
+        List<string> inputSongPaths,
+        int nsongs,
+        double noise,
+        int lookback,
+        string method
+        )
+    {
         string inputArgs = " -i " + string.Join(" -i ", inputSongPaths.Select(s => $"\"{s}\""));
         string arguments = " --generate " + method + " --vec-dir " + m_vecsDir + inputArgs + " --noise " + noise.ToString() + " --lookback " + lookback.ToString() + " --nsongs " + nsongs.ToString();
         BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: Executing Deej-AI GetPlaylist with arguments: {args}", arguments);
@@ -96,7 +106,7 @@ public class DeejAiBackend : BetterMixBackendBase
         {
             return;
         }
-        string arguments = " --vec-dir " + m_vecsDir + " --model " + m_modelPath +  " --scan " + batch.GetFilepathsString(" --scan ");
+        string arguments = " --vec-dir " + m_vecsDir + " --model " + m_modelPath + " --scan " + batch.GetFilepathsString(" --scan ") + " --ffmpeg " + BetterMixPlugin.Instance.FFmpegPath();
         BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: Executing Deej-AI Scan with arguments: {args}", arguments);
 
         using Process process = new()
@@ -163,6 +173,6 @@ public class DeejAiBackend : BetterMixBackendBase
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        progress.Report(100);  
+        progress.Report(100);
     }
 }

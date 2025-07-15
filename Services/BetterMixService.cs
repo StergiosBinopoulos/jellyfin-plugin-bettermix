@@ -79,7 +79,6 @@ public class BetterMixService(
                 items = m_musicManager.GetInstantMixFromItem(item, user, dtoOptions);
             }
 
-        // Use the original controller helper if needed to wrap the result
         var result = GetResult(items, user, numsongs, dtoOptions);
         return result;
     }
