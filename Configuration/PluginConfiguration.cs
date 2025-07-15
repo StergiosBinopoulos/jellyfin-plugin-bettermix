@@ -47,6 +47,20 @@ public class PluginConfiguration : BasePluginConfiguration
         },
         new DailyMixConfig
         {
+            Name = "DailyMix 3",
+            SampleMethod = SampleMethod.Top50,
+            InputSize = 5,
+            OutputSize = 25
+        },
+        new DailyMixConfig
+        {
+            Name = "Discover",
+            SampleMethod = SampleMethod.RandomSongs,
+            InputSize = 2,
+            OutputSize = 30
+        },
+        new DailyMixConfig
+        {
             Name = "Artist of the day",
             SampleMethod = SampleMethod.RandomArtist,
             InputSize = 30,
