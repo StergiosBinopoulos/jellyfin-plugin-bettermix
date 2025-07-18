@@ -82,14 +82,4 @@ or check the Logs.
 
 ![testing_2](docs/testing_2.png)
 
-if you find something like this in the logs. You are missing the ffmpeg libraries.
-
-![testing_3](docs/testing_3.png)
-
-Download them and restart the server.
-```bash
-sudo apt update
-sudo apt install libavcodec libavformat libavutil libswresample
-```
-
 Wait for the scan to complete and enjoy!
