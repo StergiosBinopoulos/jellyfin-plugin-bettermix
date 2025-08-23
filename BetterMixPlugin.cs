@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Configuration;
@@ -15,6 +16,7 @@ using Jellyfin.Plugin.BetterMix.Configuration;
 using Jellyfin.Plugin.BetterMix.Backend;
 using Jellyfin.Plugin.BetterMix.Filters;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Model.Entities;
 
 namespace Jellyfin.Plugin.BetterMix;
 
@@ -118,9 +120,19 @@ public class BetterMixPlugin : BasePlugin<PluginConfiguration>, IHasPluginConfig
 
     private void OnItemChanged(object? sender, ItemChangeEventArgs e)
     {
-        if (e.Item is Audio)
+        if (e.Item is Audio audio)
         {
-            ActiveBackend.AddDirectoryToScan(e.Item.ContainingFolderPath);
+            var collectionFolders = LibraryManager.GetCollectionFolders(audio);
+            foreach (var folder in collectionFolders)
+            {
+                if (folder is CollectionFolder collectionFolder)
+                {
+                    if (collectionFolder.CollectionType == Data.Enums.CollectionType.music)
+                    {
+                        ActiveBackend.AddDirectoryToScan(e.Item.ContainingFolderPath);
+                    }
+                }
+            }
         }
     }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading;
 using System.Collections.Concurrent;
@@ -5,8 +6,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Entities;
 using Jellyfin.Plugin.BetterMix.Tasks;
-using System;
 
 namespace Jellyfin.Plugin.BetterMix.Backend;
 
@@ -70,9 +71,14 @@ public abstract class BetterMixBackendBase
     private static BetterMixScanBatch GeneralScanBatch()
     {
         HashSet<string> generelScanBatch = [];
-        foreach (var child in BetterMixPlugin.Instance.LibraryManager.RootFolder.Children.OfType<Folder>())
+
+        var virtualFolders = BetterMixPlugin.Instance.LibraryManager.GetVirtualFolders();
+        var musicLibraryPaths = virtualFolders
+            .Where(vf => vf.CollectionType == CollectionTypeOptions.music)
+            .SelectMany(vf => vf.Locations);
+        foreach (var path in musicLibraryPaths)
         {
-            generelScanBatch.Add(child.Path);
+            generelScanBatch.Add(path);
         }
         return new BetterMixScanBatch(generelScanBatch);
     }
