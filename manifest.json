@@ -12,7 +12,7 @@
         "targetAbi": "10.10.1.0",
         "targetOs": "linux",
         "targetRuntime": "x64",
-        "sourceUrl": "https://github.com/StergiosBinopoulos/jellyfin-plugin-bettermix/releases/download/v0.4.2/linux-x64.zip",
+        "sourceUrl": "https://github.com/StergiosBinopoulos/jellyfin-plugin-bettermix/releases/download/pre_v0.4.3/linux-x64.zip",
         "checksum": "b805d8b85152e75102d2489adde18d74"
       },
       {
@@ -21,7 +21,7 @@
         "targetAbi": "10.10.1.0",
         "targetOs": "osx",
         "targetRuntime": "universal",
-        "sourceUrl": "https://github.com/StergiosBinopoulos/jellyfin-plugin-bettermix/releases/download/v0.4.2/macos-universal.zip",
+        "sourceUrl": "https://github.com/StergiosBinopoulos/jellyfin-plugin-bettermix/releases/download/pre_v0.4.3/macos-universal.zip",
         "checksum": "fab79b31c31775ea6beabf17b80106e9"
       },
       {
@@ -30,7 +30,7 @@
         "targetAbi": "10.10.1.0",
         "targetOs": "windows",
         "targetRuntime": "x64",
-        "sourceUrl": "https://github.com/StergiosBinopoulos/jellyfin-plugin-bettermix/releases/download/v0.4.2/windows-x64.zip",
+        "sourceUrl": "https://github.com/StergiosBinopoulos/jellyfin-plugin-bettermix/releases/download/pre_v0.4.3/windows-x64.zip",
         "checksum": "a5678e119bb2540fa561889fc5a7555b"
       },
       {
