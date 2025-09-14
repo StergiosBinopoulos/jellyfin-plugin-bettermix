@@ -26,7 +26,7 @@
           AfterTargets="Build"
           Condition="!Exists('deej-ai.cpp')">
     <Exec Command= "git clone https://github.com/StergiosBinopoulos/deej-ai.cpp" />
-    <Exec Command= "git -C deej-ai.cpp checkout v0.2.2" />
+    <Exec Command= "git -C deej-ai.cpp checkout v0.2.3" />
   </Target>
 
   <Target Name="Deej-AI-build" 
