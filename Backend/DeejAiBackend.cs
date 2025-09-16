@@ -70,7 +70,7 @@ public class DeejAiBackend : BetterMixBackendBase
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             string location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "";
-            string argsFile = Path.Combine(location, "args.txt");
+            string argsFile = Path.Combine(location, "args_generate.txt");
             File.WriteAllText(argsFile, arguments);
             arguments = " @" + argsFile;
         }
@@ -131,6 +131,14 @@ public class DeejAiBackend : BetterMixBackendBase
         }
         string arguments = " --vec-dir " + Enquote(m_vecsDir) + " --model " + Enquote(m_modelPath) + " --scan " + batch.GetFilepathsString(" --scan ") + ffmpeg;
         BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: Executing Deej-AI Scan with arguments: {args}", arguments);
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            string location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "";
+            string argsFile = Path.Combine(location, "args_scan.txt");
+            File.WriteAllText(argsFile, arguments);
+            arguments = " @" + argsFile;
+        }
 
         using Process process = new()
         {
