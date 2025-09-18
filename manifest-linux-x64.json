@@ -11,7 +11,7 @@
         "changelog": "Fixed issue with spaces in model path and executable path causing the plugin to malfunction.",
         "targetAbi": "10.10.1.0",
         "sourceUrl": "https://github.com/StergiosBinopoulos/jellyfin-plugin-bettermix/releases/download/pre_v0.4.3/linux-x64.zip",
-        "checksum": "b805d8b85152e75102d2489adde18d74"
+        "checksum": "cb542e18306647c6244be7a8bd5647a1"
       },
       {
         "version": "0.4.2.0",
