@@ -6,7 +6,7 @@
 
 
 ### 1. Install the Plugin 
-### Add Plugin Repository (Option 1) (Linux 64 bit only)
+### Add Plugin Repository (Option 1) (Linux 64 and Windows 64 bit)
 
 #### Go to Dashboard
 Navigate to Plugins > Catalog. Click the gear icon on the top left of the screen.
@@ -16,9 +16,14 @@ Navigate to Plugins > Catalog. Click the gear icon on the top left of the screen
 
 ![install_2](docs/install_2.png)
 
-Name the repository "BetterMix", paste the following url and save.
+Name the repository "BetterMix", paste the manifest url and save.
+##### for linux 64 bit:
 ```bash
-https://raw.githubusercontent.com/StergiosBinopoulos/jellyfin-plugin-bettermix/refs/heads/main/manifest.json
+https://raw.githubusercontent.com/StergiosBinopoulos/jellyfin-plugin-bettermix/refs/heads/main/manifest-linux-x64.json
+```
+##### for windows 64 bit:
+```bash
+https://raw.githubusercontent.com/StergiosBinopoulos/jellyfin-plugin-bettermix/refs/heads/main/manifest-windows-x64.json
 ```
 ![install_3](docs/install_3.png)
 
@@ -35,10 +40,9 @@ Find the BetterMix Plugin in the catalog and install.
 - **The Deej-AI model**
 - **NET 8.0** (to build the plugin)
 - **C++20**
-- **CMake** ≥ 3.14
+- **CMake** ≥ 3.15
 - **Ninja**
 - **git**
-- **ffmpeg libraries**
 - **curl** (to download the model)
 
 #### Clone the Repository
