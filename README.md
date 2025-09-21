@@ -25,6 +25,12 @@ https://raw.githubusercontent.com/StergiosBinopoulos/jellyfin-plugin-bettermix/r
 ```bash
 https://raw.githubusercontent.com/StergiosBinopoulos/jellyfin-plugin-bettermix/refs/heads/main/manifest-windows-x64.json
 ```
+##### for macos univesal:
+No manifest exists since additional manual setup is needed. Download the prebuild package unpack it and move it in the plugin directory manually. Then use this command on the root directory of the plugin to allow the executables to run.
+```bash
+find {BetterMixPath} -type f -exec xattr -d com.apple.quarantine {} +
+```
+
 ![install_3](docs/install_3.png)
 
 #### Find the plugin and install
