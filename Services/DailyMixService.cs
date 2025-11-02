@@ -10,8 +10,10 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Jellyfin.Plugin.BetterMix.Configuration;
 using Jellyfin.Plugin.BetterMix.Backend;
-using Jellyfin.Data.Entities;
 using Jellyfin.Data.Enums;
+using Jellyfin.Database.Implementations.Enums;
+using Jellyfin.Database.Implementations.Entities;
+
 
 namespace Jellyfin.Plugin.BetterMix.Services;
 

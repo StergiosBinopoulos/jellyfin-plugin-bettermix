@@ -30,7 +30,7 @@ public class DailyMixTask(DailyMixService DailyMixService) : IScheduledTask
         [
             new TaskTriggerInfo
             {
-                Type = "DailyTrigger",
+                Type = TaskTriggerInfoType.DailyTrigger,
                 TimeOfDayTicks = TimeSpan.FromHours(0).Ticks
             }
         ];

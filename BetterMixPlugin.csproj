@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <RootNamespace>Jellyfin.Plugin.BetterMix</RootNamespace>
     <AssemblyName>Jellyfin.Plugin.BetterMix</AssemblyName>
@@ -12,9 +12,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jellyfin.Common" Version="10.10.1" />
-    <PackageReference Include="Jellyfin.Controller" Version="10.10.1" />
-    <PackageReference Include="Jellyfin.Model" Version="10.10.1" />
+    <PackageReference Include="Jellyfin.Common" Version="10.11.0" />
+    <PackageReference Include="Jellyfin.Controller" Version="10.11.0" />
+    <PackageReference Include="Jellyfin.Model" Version="10.11.0" />
   </ItemGroup>
 
   <ItemGroup>
