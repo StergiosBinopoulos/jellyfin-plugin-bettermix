@@ -11,7 +11,7 @@
         "changelog": "Update Target ABI to 10.11.0.0 ",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/StergiosBinopoulos/jellyfin-plugin-bettermix/releases/download/v0.5.0/windows-x64.zip",
-        "checksum": "a410a84fb83dd79731f236329e6999bb"
+        "checksum": "bb65fcbcaf1bdf535f0573e2c6435b61"
       },
       {
         "version": "0.4.3.0",
