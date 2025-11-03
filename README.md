@@ -69,7 +69,7 @@ Install the plugin. Copy the plugin folder to the Jellyfin plugins directory and
 
 ```bash
 sudo mkdir -p /var/lib/jellyfin/plugins/Jellyfin.Plugin.BetterMix/
-sudo cp -r bin/Debug/net8.0/* /var/lib/jellyfin/plugins/Jellyfin.Plugin.BetterMix/
+sudo cp -r bin/Debug/net9.0/* /var/lib/jellyfin/plugins/Jellyfin.Plugin.BetterMix/
 sudo chown -R jellyfin:jellyfin /var/lib/jellyfin/plugins/Jellyfin.Plugin.BetterMix/
 sudo systemctl restart jellyfin
 ```
