@@ -61,7 +61,7 @@ public class PluginConfiguration : BasePluginConfiguration
         },
         new DailyMixConfig
         {
-            Name = "Artist of the day",
+            Name = "Artist Radio",
             SampleMethod = SampleMethod.RandomArtist,
             InputSize = 30,
             OutputSize = 40

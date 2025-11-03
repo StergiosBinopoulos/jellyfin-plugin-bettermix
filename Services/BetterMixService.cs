@@ -10,7 +10,7 @@ using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Controller.Library;
 using Microsoft.Extensions.Logging;
-using Jellyfin.Data.Entities;
+using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Extensions;
 using Jellyfin.Plugin.BetterMix.Extensions;
 using Jellyfin.Plugin.BetterMix.Backend;
@@ -76,7 +76,7 @@ public class BetterMixService(
         if (items is null)
             {
                 BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: Falling back to Native Instant Mix.");
-                items = m_musicManager.GetInstantMixFromItem(item, user, dtoOptions);
+                items = m_musicManager.GetInstantMixFromItem(item, user, dtoOptions).ToList();
             }
 
         var result = GetResult(items, user, numsongs, dtoOptions);

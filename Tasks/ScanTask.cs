@@ -30,11 +30,11 @@ public class ScanTask : IScheduledTask
         [
             new TaskTriggerInfo
             {
-                Type = "StartupTrigger"
+                Type = TaskTriggerInfoType.StartupTrigger
             },
             new TaskTriggerInfo
             {
-                Type = "DailyTrigger",
+                Type = TaskTriggerInfoType.DailyTrigger,
                 TimeOfDayTicks = TimeSpan.FromHours(3).Ticks
             }
         ];
