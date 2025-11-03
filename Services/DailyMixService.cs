@@ -32,6 +32,25 @@ public class DailyMixService(IPlaylistManager playlistManager, ILibraryManager l
         throw new InvalidOperationException("Plugin directory not found.");
     private readonly string m_dataFilePath = Path.Combine(m_pluginDirectory, "dailymix.txt");
 
+    private void DeleteHomonymousPlaylists(string playlistName)
+    {
+        var playlists = m_libraryManager.GetItemList(new InternalItemsQuery
+        {
+            IncludeItemTypes = [BaseItemKind.Playlist],
+            Recursive = true
+        });
+
+        var targetPlaylists = playlists
+            .Where(p => p.Name.Equals(playlistName, StringComparison.Ordinal))
+            .ToList();
+
+        foreach (var playlist in targetPlaylists)
+        {
+            var options = new DeleteOptions { DeleteFileLocation = true };
+            m_libraryManager.DeleteItem(playlist, options);
+        }
+    }
+
     public async Task CreateDailyMixes()
     {
         // remove old mixes
@@ -53,13 +72,19 @@ public class DailyMixService(IPlaylistManager playlistManager, ILibraryManager l
             {
                 m_libraryManager.DeleteItem(playlist, options);
             }
-        }   
+        }
 
         DeejAiBackend deejai = new();
         var config = BetterMixPlugin.Instance.Configuration;
         List<string> newGuids = [];
         foreach (var user in m_userManager.Users)
         {
+            // Delete same name playlists
+            foreach (var mix in config.DailyMixes)
+            {
+                DeleteHomonymousPlaylists(string.Format("{0} ({1})", mix.Name, user.Username));
+            }
+
             foreach (var mix in config.DailyMixes)
             {
                 IReadOnlyList<BaseItem> inputSongs = CreateInputSample(mix.SampleMethod, mix.InputSize, user);
