@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Common.Configuration;
@@ -16,7 +15,6 @@ using Jellyfin.Plugin.BetterMix.Configuration;
 using Jellyfin.Plugin.BetterMix.Backend;
 using Jellyfin.Plugin.BetterMix.Filters;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Model.Entities;
 
 namespace Jellyfin.Plugin.BetterMix;
 

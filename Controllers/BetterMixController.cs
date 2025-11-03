@@ -1,9 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dto;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
