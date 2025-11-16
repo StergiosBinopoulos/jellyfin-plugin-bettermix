@@ -1,6 +1,7 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Playlists;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Controller.Playlists;
 using System;
 using System.Reflection;
@@ -31,6 +32,17 @@ public class DailyMixService(IPlaylistManager playlistManager, ILibraryManager l
     static private readonly string m_pluginDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ??
         throw new InvalidOperationException("Plugin directory not found.");
     private readonly string m_dataFilePath = Path.Combine(m_pluginDirectory, "dailymix.txt");
+
+    private static List<BaseItem> FilterSongsBasedOnLength(QueryResult<BaseItem>? songList, int minSongLength)
+    {
+        if (songList == null) 
+            return [];
+            
+        var filteredSongs = songList.Items
+            .Where(song => song.RunTimeTicks.HasValue && song.RunTimeTicks.Value >= TimeSpan.FromSeconds(minSongLength).Ticks)
+            .ToList();
+        return filteredSongs;
+    }
 
     private void DeleteHomonymousPlaylists(string playlistName)
     {
@@ -87,13 +99,13 @@ public class DailyMixService(IPlaylistManager playlistManager, ILibraryManager l
 
             foreach (var mix in config.DailyMixes)
             {
-                IReadOnlyList<BaseItem> inputSongs = CreateInputSample(mix.SampleMethod, mix.InputSize, user);
+                List<BaseItem> inputSongs = CreateInputSample(mix.SampleMethod, mix.InputSize, user, mix.MinSongLength);
                 if (inputSongs.Count < 1)
                 {
                     continue;
                 }
                 List<string> inputSongPaths = inputSongs.Select(item => item.Path).ToList();
-                List<BaseItem>? items = deejai.GetPlaylist(inputSongPaths, mix.OutputSize, 0.01, 3, "cluster --reorder-output ");
+                List<BaseItem>? items = deejai.GetPlaylist(inputSongPaths, mix.OutputSize, mix.Noise, 3, "cluster --reorder-output ");
                 if (items == null)
                 {
                     continue;
@@ -118,7 +130,7 @@ public class DailyMixService(IPlaylistManager playlistManager, ILibraryManager l
         File.WriteAllText(m_dataFilePath, line);
     }
 
-    public IReadOnlyList<BaseItem> CreateInputSample(SampleMethod method, int size, User user)
+    public List<BaseItem> CreateInputSample(SampleMethod method, int size, User user, int minSongLength)
     {
         IReadOnlyList<(ItemSortBy OrderBy, SortOrder SortOrder)> order = [(ItemSortBy.Random, SortOrder.Ascending)];
         int limit = size;
@@ -151,19 +163,31 @@ public class DailyMixService(IPlaylistManager playlistManager, ILibraryManager l
                         IncludeItemTypes = [BaseItemKind.Audio],
                         ArtistIds = [artist.Item.Id],
                         OrderBy = order,
-                        Limit = size,
+                        Limit = 100,
                         User = user
                     });
 
                     // find an artist with at least 5 songs
-                    if (artistSongResult.Items.Count > 4 || artistSongResult.Items.Count > size)
+                    var filteredSongs = FilterSongsBasedOnLength(artistSongResult, minSongLength);
+                    if (filteredSongs.Count > 4 || filteredSongs.Count > size)
                     {
-                        var artistShuffled = artistSongResult.Items.OrderBy(_ => rd.Next()).ToList();
+                        var artistShuffled = filteredSongs.OrderBy(_ => rd.Next()).ToList();
                         return artistShuffled.Take(size).ToList();
                     } 
                 }
                 return [];
             case SampleMethod.RandomSongs:
+                var randomResult = m_libraryManager.GetItemsResult(new InternalItemsQuery
+                {
+                    IncludeItemTypes = [BaseItemKind.Audio],
+                    OrderBy = order,
+                    Limit = 100,
+                    User = user
+                });
+                var rdVal = new Random();
+                var filteredRandomSongs = FilterSongsBasedOnLength(randomResult, minSongLength);
+                var randomSongsShuffled = filteredRandomSongs.OrderBy(_ => rdVal.Next()).ToList();
+                return randomSongsShuffled.Take(size).ToList();
             default:
                 break;
         }
@@ -176,9 +200,9 @@ public class DailyMixService(IPlaylistManager playlistManager, ILibraryManager l
             User = user
         });
 
-        var itemList = result.Items;
+        var itemList = FilterSongsBasedOnLength(result, minSongLength);
         var rng = new Random();
-        var shuffled = result.Items.OrderBy(_ => rng.Next()).ToList();
+        var shuffled = itemList.OrderBy(_ => rng.Next()).ToList();
         return shuffled.Take(size).ToList();
     }
 }

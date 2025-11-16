@@ -19,7 +19,8 @@ public class DeejAiBackend : BetterMixBackendBase
         throw new InvalidOperationException("Plugin directory not found.");
     private readonly string m_binaryPath = Path.Combine(m_pluginDirectory, m_deejAiDir, "deej-ai.cpp/bin/deej-ai");
     private readonly string m_modelPath = Path.Combine(m_pluginDirectory, m_deejAiDir, "deej-ai.onnx");
-    private readonly string m_vecsDir = Path.Combine(m_pluginDirectory, m_deejAiDir, "audio_vecs");
+    private const string m_vecsDirName = "audio_vecs";
+    private readonly string m_vecsDirPath = Path.Combine(m_pluginDirectory, m_deejAiDir, m_vecsDirName);
 
     private static string Enquote(string str)
     {
@@ -36,6 +37,17 @@ public class DeejAiBackend : BetterMixBackendBase
             int k = rng.Next(n + 1);
             (list[k], list[n]) = (list[n], list[k]); // tuple swap
         }
+    }
+
+    public string VectorsPath()
+    {
+        var config = BetterMixPlugin.Instance.Configuration;
+        if (config.CustomPathEnabled)
+        {
+            return Path.Combine(config.CustomPath, m_vecsDirName);
+        }
+
+        return m_vecsDirPath;
     }
 
     public override List<BaseItem>? GetPlaylist(List<string> inputSongPaths, int nsongs, PlaylistType type)
@@ -64,7 +76,7 @@ public class DeejAiBackend : BetterMixBackendBase
         )
     {
         string inputArgs = " -i " + string.Join(" -i ", inputSongPaths.Select(Enquote));
-        string arguments = " --generate " + method + " --vec-dir " + Enquote(m_vecsDir) + inputArgs + " --noise " + noise.ToString() + " --lookback " + lookback.ToString() + " --nsongs " + nsongs.ToString();
+        string arguments = " --generate " + method + " --vec-dir " + Enquote(VectorsPath()) + inputArgs + " --noise " + noise.ToString() + " --lookback " + lookback.ToString() + " --nsongs " + nsongs.ToString();
         BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: Executing Deej-AI GetPlaylist with arguments: {args}", arguments);
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -129,7 +141,7 @@ public class DeejAiBackend : BetterMixBackendBase
         {
             ffmpeg = " --ffmpeg " + Enquote(ffmpegPath);
         }
-        string arguments = " --vec-dir " + Enquote(m_vecsDir) + " --model " + Enquote(m_modelPath) + " --scan " + batch.GetFilepathsString(" --scan ") + ffmpeg;
+        string arguments = " --vec-dir " + Enquote(VectorsPath()) + " --model " + Enquote(m_modelPath) + " --scan " + batch.GetFilepathsString(" --scan ") + ffmpeg;
         BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: Executing Deej-AI Scan with arguments: {args}", arguments);
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
