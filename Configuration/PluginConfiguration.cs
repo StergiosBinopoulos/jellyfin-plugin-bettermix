@@ -36,6 +36,8 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public int DeejaiLookback { get; set; } = 3;
 
+    public required int DeejaiMaxJobs { get; set; } = -1;
+
     public DailyMixConfig[] DailyMixes { get; set; } = [
         new DailyMixConfig
         {

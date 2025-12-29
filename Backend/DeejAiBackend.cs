@@ -137,11 +137,14 @@ public class DeejAiBackend : BetterMixBackendBase
         }
         string ffmpeg = "";
         string? ffmpegPath = BetterMixPlugin.Instance.FFmpegPath();
+        var config = BetterMixPlugin.Instance.Configuration;
+        int jobs = config.DeejaiMaxJobs;
+
         if (ffmpegPath != null)
         {
             ffmpeg = " --ffmpeg " + Enquote(ffmpegPath);
         }
-        string arguments = " --vec-dir " + Enquote(VectorsPath()) + " --model " + Enquote(m_modelPath) + " --scan " + batch.GetFilepathsString(" --scan ") + ffmpeg;
+        string arguments = " --vec-dir " + Enquote(VectorsPath()) + " --model " + Enquote(m_modelPath) + " --scan " + batch.GetFilepathsString(" --scan ") + ffmpeg + " -j " + jobs.ToString() ;
         BetterMixPlugin.Instance.Logger.LogInformation("BetterMix: Executing Deej-AI Scan with arguments: {args}", arguments);
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
