@@ -7,6 +7,13 @@
     "category": "General",
     "versions": [
       {
+        "version": "0.5.2.0",
+        "changelog": "Introduced multi-threading for the scan task.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/StergiosBinopoulos/jellyfin-plugin-bettermix/releases/download/v0.5.2/linux-x64.zip",
+        "checksum": "b7c4951e8831ec74cb5be826481126d9"
+      },
+      {
         "version": "0.5.1.0",
         "changelog": "Added support for opus and aac files. Added useful configuration fields.",
         "targetAbi": "10.11.0.0",
