@@ -11,7 +11,7 @@
         "changelog": "Introduced multi-threading for the scan task.",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/StergiosBinopoulos/jellyfin-plugin-bettermix/releases/download/v0.5.2/linux-x64.zip",
-        "checksum": "011486b4c35b933a00d7934877c36dd2"
+        "checksum": "a01a4808ba95c622b0332969d346bade"
       },
       {
         "version": "0.5.1.0",
