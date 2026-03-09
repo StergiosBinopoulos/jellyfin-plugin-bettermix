@@ -7,6 +7,13 @@
     "category": "General",
     "versions": [
       {
+        "version": "0.5.3.0",
+        "changelog": "Fixed bugs on the configuration page.",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/StergiosBinopoulos/jellyfin-plugin-bettermix/releases/download/v0.5.3/linux-x64.zip",
+        "checksum": "d46d3512d73ec5dcb0659428cc1d99f9"
+      },
+      {
         "version": "0.5.2.0",
         "changelog": "Introduced multi-threading for the scan task.",
         "targetAbi": "10.11.0.0",
