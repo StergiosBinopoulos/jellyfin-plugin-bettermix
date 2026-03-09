@@ -140,12 +140,12 @@
             pages: {},
             addDailyMix: function (dailyMix) {
                 const template = BetterMix.template.cloneNode(true).content;
-                template.querySelector("[data-id=dailyMixName]").value = dailyMix.Name || "";
-                template.querySelector("[data-id=dailyMixSampleMethod]").value = dailyMix.SampleMethod || "";
-                template.querySelector("[data-id=dailyMixInputSize]").value = dailyMix.InputSize || 1;
-                template.querySelector("[data-id=dailyMixOutputSize]").value = dailyMix.OutputSize || 2;
-                template.querySelector("[data-id=dailyMixNoise]").value = dailyMix.Noise || 0.01;
-                template.querySelector("[data-id=dailyMixMinSongLength]").value = dailyMix.MinSongLength || 90;
+                template.querySelector("[data-id=dailyMixName]").value = dailyMix.Name ?? "";
+                template.querySelector("[data-id=dailyMixSampleMethod]").value = dailyMix.SampleMethod ?? "";
+                template.querySelector("[data-id=dailyMixInputSize]").value = dailyMix.InputSize ?? 1;
+                template.querySelector("[data-id=dailyMixOutputSize]").value = dailyMix.OutputSize ?? 2;
+                template.querySelector("[data-id=dailyMixNoise]").value = dailyMix.Noise ?? 0.01;
+                template.querySelector("[data-id=dailyMixMinSongLength]").value = dailyMix.MinSongLength ?? 90;
 
                 const el = BetterMix.dailyMixWrapper.appendChild(template);
             },
@@ -154,7 +154,9 @@
                     Name: "DailyMix",
                     SampleMethod: "Top100",
                     InputSize: 20,
-                    OutputSize: 40
+                    OutputSize: 40,
+                    Noise: 0.01,
+                    MinSongLength: 90
                 };
                 BetterMix.addDailyMix(DailyMix);
             },
@@ -199,7 +201,7 @@
                         SampleMethod: configs[i].querySelector("[data-id=dailyMixSampleMethod]").value,
                         InputSize: parseInt(configs[i].querySelector("[data-id=dailyMixInputSize]").value),
                         OutputSize: parseInt(configs[i].querySelector("[data-id=dailyMixOutputSize]").value),
-                        Noise: parseInt(configs[i].querySelector("[data-id=dailyMixNoise]").value),
+                        Noise: parseFloat(configs[i].querySelector("[data-id=dailyMixNoise]").value),
                         MinSongLength: parseInt(configs[i].querySelector("[data-id=dailyMixMinSongLength]").value)
                     };
 
@@ -214,7 +216,6 @@
                 window.ApiClient.getPluginConfiguration(BetterMix.pluginId)
                     .then(config => {
                         console.log("Loaded config:", config);
-                        console.log("l config:", BetterMix.customPathInput.value);
                         BetterMix.customPathCheckbox.checked = config.CustomPathEnabled ?? false;
                         BetterMix.customPathInput.value = config.CustomPath ?? "";
                         BetterMix.comboBox.value = config.SelectedBackend ?? "deejai";
@@ -223,6 +224,7 @@
                         document.querySelector('[data-id="deejaiLookback"]').value = config.DeejaiLookback ?? 3;
                         document.querySelector('[data-id="deejaiMaxJobs"]').value = config.DeejaiMaxJobs ?? -1;
 
+                        document.querySelectorAll('[data-id="dailyMix"]').forEach(el => el.remove());
                         for (let i = 0; i < config.DailyMixes.length; i++) {
                             BetterMix.addDailyMix(config.DailyMixes[i]);
                         }
