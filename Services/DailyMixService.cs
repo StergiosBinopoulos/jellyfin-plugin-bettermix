@@ -188,6 +188,19 @@ public class DailyMixService(IPlaylistManager playlistManager, ILibraryManager l
                 var filteredRandomSongs = FilterSongsBasedOnLength(randomResult, minSongLength);
                 var randomSongsShuffled = filteredRandomSongs.OrderBy(_ => rdVal.Next()).ToList();
                 return randomSongsShuffled.Take(size).ToList();
+            case SampleMethod.FavoriteSongs:
+                var favoriteResult = m_libraryManager.GetItemsResult(new InternalItemsQuery
+                {
+                    IncludeItemTypes = [BaseItemKind.Audio],
+                    IsFavorite = true,
+                    OrderBy = order,
+                    Limit = 100,
+                    User = user
+                });
+                var rdValfav = new Random();
+                var filteredFavoriteSongs = FilterSongsBasedOnLength(favoriteResult, minSongLength);
+                var favoriteSongsShuffled = filteredFavoriteSongs.OrderBy(_ => rdValfav.Next()).ToList();
+                return favoriteSongsShuffled.Take(size).ToList();
             default:
                 break;
         }

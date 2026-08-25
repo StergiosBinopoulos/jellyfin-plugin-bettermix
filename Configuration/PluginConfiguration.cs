@@ -8,7 +8,8 @@ public enum SampleMethod
     Top100,
     Top200,
     RandomArtist,
-    RandomSongs
+    RandomSongs,
+    FavoriteSongs
     
 }
 
