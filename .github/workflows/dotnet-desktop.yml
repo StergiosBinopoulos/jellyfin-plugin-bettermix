@@ -2,9 +2,9 @@ name: Build
 
 on:
   push:
-    branches: [main, feat-gh-actions, feat-gh-actions-arm]
+    branches: [main, prerelease]
   pull_request:
-    branches: [main, feat-gh-actions, feat-gh-actions-arm]
+    branches: [main, prerelease]
 
 jobs:
   build-linux-arm64:
