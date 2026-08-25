@@ -44,7 +44,7 @@ Find the BetterMix Plugin in the catalog and install.
 
 #### Requirements
 - **The Deej-AI model**
-- **NET 8.0** (to build the plugin)
+- **NET 9.0** (to build the plugin)
 - **C++20**
 - **CMake** ≥ 3.15
 - **Ninja**
@@ -60,7 +60,7 @@ cd jellyfin-plugin-bettermix
 
 #### Build the plugin. 
 
-Make sure you have the .NET 8.0 SDK installed. The *deej-ai.cpp* repo will be automatically downloaded and build. The model will also be automatically downloaded (from [here](https://huggingface.co/StergiosBinopoulos/deej-ai.onnx/resolve/main/)). To use a custom model; first convert your model to ONNX, afterward save your model in the root directory and rename it to *deej-ai.onnx* before running the build command.
+Make sure you have the .NET 9.0 SDK installed. The *deej-ai.cpp* repo will be automatically downloaded and build. The model will also be automatically downloaded (from [here](https://huggingface.co/StergiosBinopoulos/deej-ai.onnx/resolve/main/)). To use a custom model; first convert your model to ONNX, afterward save your model in the root directory and rename it to *deej-ai.onnx* before running the build command.
 ```bash
 dotnet build
 ```
