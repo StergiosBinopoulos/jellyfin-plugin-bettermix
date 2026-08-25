@@ -89,7 +89,7 @@ public class DailyMixService(IPlaylistManager playlistManager, ILibraryManager l
         DeejAiBackend deejai = new();
         var config = BetterMixPlugin.Instance.Configuration;
         List<string> newGuids = [];
-        foreach (var user in m_userManager.Users)
+        foreach (var user in m_userManager.GetUsers())
         {
             // Delete same name playlists
             foreach (var mix in config.DailyMixes)
@@ -188,6 +188,19 @@ public class DailyMixService(IPlaylistManager playlistManager, ILibraryManager l
                 var filteredRandomSongs = FilterSongsBasedOnLength(randomResult, minSongLength);
                 var randomSongsShuffled = filteredRandomSongs.OrderBy(_ => rdVal.Next()).ToList();
                 return randomSongsShuffled.Take(size).ToList();
+            case SampleMethod.FavoriteSongs:
+                var favoriteResult = m_libraryManager.GetItemsResult(new InternalItemsQuery
+                {
+                    IncludeItemTypes = [BaseItemKind.Audio],
+                    IsFavorite = true,
+                    OrderBy = order,
+                    Limit = 100,
+                    User = user
+                });
+                var rdValfav = new Random();
+                var filteredFavoriteSongs = FilterSongsBasedOnLength(favoriteResult, minSongLength);
+                var favoriteSongsShuffled = filteredFavoriteSongs.OrderBy(_ => rdValfav.Next()).ToList();
+                return favoriteSongsShuffled.Take(size).ToList();
             default:
                 break;
         }

@@ -7,6 +7,13 @@
     "category": "General",
     "versions": [
       {
+        "version": "0.5.4.0",
+        "changelog": "Added favorite songs as a sampling method.",
+        "targetAbi": "10.11.11.0",
+        "sourceUrl": "https://github.com/StergiosBinopoulos/jellyfin-plugin-bettermix/releases/download/v0.5.4/windows-x64.zip",
+        "checksum": "cf801eba12f3f21616ade3b9956800f4"
+      },
+      {
         "version": "0.5.3.0",
         "changelog": "Fixed bugs on the configuration page.",
         "targetAbi": "10.11.0.0",
