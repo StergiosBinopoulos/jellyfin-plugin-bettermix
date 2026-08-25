@@ -89,7 +89,7 @@ public class DailyMixService(IPlaylistManager playlistManager, ILibraryManager l
         DeejAiBackend deejai = new();
         var config = BetterMixPlugin.Instance.Configuration;
         List<string> newGuids = [];
-        foreach (var user in m_userManager.Users)
+        foreach (var user in m_userManager.GetUsers())
         {
             // Delete same name playlists
             foreach (var mix in config.DailyMixes)
