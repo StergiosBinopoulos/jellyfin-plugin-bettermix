@@ -15,7 +15,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: '10.0.x'
 
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y cmake ninja-build gcc g++ curl git
@@ -30,10 +30,10 @@ jobs:
         run: dotnet build --configuration Release
 
       - name: Set executable bit
-        run: chmod +x bin/Release/net9.0/Deej-AI/deej-ai.cpp/bin/deej-ai
+        run: chmod +x bin/Release/net10.0/Deej-AI/deej-ai.cpp/bin/deej-ai
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
           name: linux-arm64
-          path: bin/Release/net9.0/
+          path: bin/Release/net10.0/
